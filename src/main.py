@@ -18,10 +18,10 @@ def index(a, x):
     raise ValueError
 
 def get_maximized_pleasure(time_have: int, movies_origin: List[Movie]) -> List[Movie]:
-    def func1(x):
+    def toggle_rating(x):
         x.movie_rating=-x.movie_rating
         return x
-    movies = list(map(func1, movies_origin))
+    movies = list(map(toggle_rating, movies_origin))
     n = len(movies)
     curr = 0
     movies.sort(key=lambda x:x.movie_length)
@@ -53,4 +53,5 @@ def get_maximized_pleasure(time_have: int, movies_origin: List[Movie]) -> List[M
         movies_length = [m.movie_length for m in movies]
         n=len(movies)
     
+    res = list(map(toggle_rating, res))
     return res

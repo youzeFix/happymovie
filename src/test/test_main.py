@@ -1,7 +1,9 @@
 import unittest
-from ..main import get_maximized_pleasure, Movie
+from ..main import get_maximized_pleasure, Movie, request_douban_movie, get_douban_top250
 from pprint import pprint
+import warnings
 
+warnings.simplefilter('ignore', ResourceWarning)
 class TestMainMethods(unittest.TestCase):
 
     def test_get_maximized_pleasure(self):
@@ -18,6 +20,13 @@ class TestMainMethods(unittest.TestCase):
 
         res = get_maximized_pleasure(time_have, movies)
         pprint(res)
+
+    def test_get_douban_movie(self):
+        request_douban_movie()
+
+
+    def test_get_douban_top250(self):
+        get_douban_top250()
 
 
 

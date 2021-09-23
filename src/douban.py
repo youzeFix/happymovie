@@ -48,7 +48,7 @@ def get_page_text(url):
                 print('retry', max_retries)
 
     else:
-        res = requests.get(url, headers=headers, timeout=5)
+        res = requests.get(url, headers=headers, timeout=15)
         print(res.status_code)
         if res.headers.get('Content-Encoding') == 'br':
             data = brotli.decompress(res.content)
@@ -65,7 +65,7 @@ def get_douban_top250():
     DOUBAN_URL = 'https://movie.douban.com/top250?start={}&filter='
     movie_list = []
     try:
-        for i in range(0, 250, 25):
+        for i in range(200, 250, 25):
             url = DOUBAN_URL.format(i)
             list_page_text = get_page_text(url)
             time.sleep(random.randint(5,10))
@@ -96,4 +96,4 @@ if __name__ == "__main__":
     logging.info('start crawl')
     df = get_douban_top250()
     print(df)
-    df.to_excel('top250.xlsx')
+    df.to_excel('starton200.xlsx')

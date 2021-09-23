@@ -6,6 +6,11 @@ happy movie, useful
 ```sh
 python -m src.test.test_main
 ```
+测试db
+```sh
+python -m src.test.test_db
+```
+
 测试单个方法
 ```
 python -m unittest src.test.test_main.TestMainMethods.test_get_maximized_pleasure

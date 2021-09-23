@@ -1,4 +1,3 @@
-from math import e
 import unittest
 from ..main import get_maximized_pleasure, Movie, request_douban_movie, get_douban_top250
 from pprint import pprint

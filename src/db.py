@@ -32,7 +32,6 @@ def insert_movie(movie_name:str, movie_runtime:int, movie_rating:float, movie_li
     with db:
         db.execute(INSERT_MOVIE_STATEMENT, sql_params)
 
-
 def get_all_movies() -> List[Tuple]:
     QUERY_ALL_MOVIE_STATEMENT = '''
     SELECT * FROM movies
@@ -43,9 +42,27 @@ def get_all_movies() -> List[Tuple]:
 
     return res
 
+def remove_movie(id):
+    REMOVE_MOVIE_STATEMENT = '''
+    DELETE FROM movies WHERE id = ?
+    '''
+    db.execute(REMOVE_MOVIE_STATEMENT, (id,))
+
+def update_movie(id:int, movie_rating:float=None, movie_likability:int=None, have_seen:int=None, origin:str=None):
+    params = locals()
+    del params['id']
+    tmp_l = [f'{k}={v}' for k,v in params.items() if v is not None]
+
+    UPDATE_MOVIE_STATEMENT = f'''
+    UPDATE movies SET {','.join(tmp_l)} WHERE id = ?
+    '''
+    print(UPDATE_MOVIE_STATEMENT)
+
+    db.execute(UPDATE_MOVIE_STATEMENT, (id,))
 
 
 if __name__ == "__main__":
-
-    row = db.execute('SELECT count(*) FROM sqlite_master WHERE type="table" AND name =?', ('movies',))
-    print(row.fetchone())
+    
+    # row = db.execute('SELECT count(*) FROM sqlite_master WHERE type="table" AND name =?', ('movies',))
+    # print(row.fetchone())
+    pass

@@ -18,7 +18,7 @@ python -m unittest test.test_main.TestMainMethods.test_get_maximized_pleasure
 
 ## 启动flask
 ```powershell
-$env:FLASK_APP = "flaskr"
+$env:FLASK_APP = "server"
 $env:FLASK_ENV = "development"
 flask run
 ```

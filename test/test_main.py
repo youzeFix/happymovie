@@ -1,8 +1,8 @@
 import unittest
-from ..main import get_maximized_pleasure, Movie, request_douban_movie, get_douban_top250
+from src.main import get_maximized_pleasure, Movie, request_douban_movie, get_douban_top250
 from pprint import pprint
 import warnings
-from ..douban import get_proxy
+from src.douban import get_proxy
 import requests
 
 warnings.simplefilter('ignore', ResourceWarning)
@@ -25,7 +25,6 @@ class TestMainMethods(unittest.TestCase):
 
     def test_get_douban_movie(self):
         request_douban_movie()
-
 
     def test_get_douban_top250(self):
         get_douban_top250()

@@ -1,21 +1,24 @@
 from flask import Blueprint, g, request, current_app
 import json
+import logging
+from .utils import datetime_to_json
 
-from db import get_db
+from .db import get_db
 
-logger = current_app.logger
+# logger = current_app.logger
+logger = logging.getLogger(__name__)
 bp = Blueprint('movies', __name__, url_prefix='/movie')
 
 
-@bp.route('/all', methods=('GET'))
+@bp.route('/all', methods=['GET'])
 def get_all_movies():
     db = get_db()
     res = db.query_all_movies()
 
-    return json.dumps(res, ensure_ascii=False)
+    return json.dumps(res, default=datetime_to_json, ensure_ascii=False)
 
 
-@bp.route('/', methods=('POST'))
+@bp.route('/', methods=['POST'])
 def insert_one_movie():
     r = request.get_json()
     if r is None:
@@ -30,7 +33,7 @@ def insert_one_movie():
     return {'statusCode': 0, 'message':'insert movie success'}
 
 
-@bp.route('/', methods=('PUT'))
+@bp.route('/', methods=['PUT'])
 def update_one_movie():
     r = request.get_json()
     if r is None:
@@ -47,7 +50,7 @@ def update_one_movie():
     return {'statusCode': 0, 'message':'update movie success'}
 
 
-@bp.route('/', methods=('DELETE'))
+@bp.route('/', methods=['DELETE'])
 def remove_one_movie():
     movie_id = request.args.get('id', None)
     if id is None:

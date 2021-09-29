@@ -1,5 +1,5 @@
 import unittest
-from ..db import db, get_all_movies, insert_movie, update_movie
+from src.db import db, get_all_movies, insert_movie, update_movie
 
 class TestDBMethods(unittest.TestCase):
 

@@ -13,7 +13,21 @@ bp = Blueprint('movies', __name__, url_prefix='/movie')
 @bp.route('/all', methods=['GET'])
 def get_all_movies():
     db = get_db()
-    res = db.query_all_movies()
+    db_res = db.query_all_movies()
+    # print(db_res)
+    res = []
+
+    for row in db_res:
+        res.append({
+            'index': row[0],
+            'movie_name': row[1],
+            'movie_runtime': row[2],
+            'movie_rating': row[3],
+            'movie_likability': row[4],
+            'have_seen': row[5],
+            'origin': row[6],
+            'create_time': row[7]
+        })
 
     return json.dumps(res, default=datetime_to_json, ensure_ascii=False)
 

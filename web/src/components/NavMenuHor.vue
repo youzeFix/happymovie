@@ -21,7 +21,6 @@
         <el-menu-item index="2-4-3">选项3</el-menu-item>
         </el-submenu>
     </el-submenu>
-    <el-menu-item index="3" disabled>消息中心</el-menu-item>
     <el-menu-item index="/about">关于</el-menu-item>
     </el-menu>
 </template>

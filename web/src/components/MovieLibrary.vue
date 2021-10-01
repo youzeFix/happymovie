@@ -3,6 +3,7 @@
     <div class="button-group">
         <el-button type="success" icon="el-icon-refresh" @click="loadMovieData()">刷新</el-button>
         <el-button type="primary" icon="el-icon-edit-outline" @click="editMovieData()" :disabled='edit_disabled'>编辑</el-button>
+        <el-button type="primary" icon="el-icon-plus" @click="addMovieData()">新增</el-button>
         <el-button @click="setCurrent()">取消选择</el-button>
     </div>
     
@@ -47,7 +48,7 @@
         <el-table-column
         property="have_seen"
         label="是否看过"
-        width="80"
+        width="100"
         header-align="center"
         align="center">
         </el-table-column>
@@ -62,6 +63,7 @@
         property="origin"
         label="来源"
         header-align="center"
+        align="center"
         >
         </el-table-column>
     </el-table>
@@ -70,15 +72,15 @@
     <el-dialog title="编辑电影" :visible.sync="dialogEditFormVisible">
     <el-form :model="movie_form" v-loading="dialogEditLoading">
         <el-form-item label="电影名称">
-        <el-input v-model="movie_form.movie_name" autocomplete="off"></el-input>
+        <el-input v-model="movie_form.movie_name" autocomplete="off" disabled></el-input>
         </el-form-item>
         <el-form-item label="电影时长">
-        <el-input-number v-model="movie_form.movie_runtime" controls-position="right" :min="1" :max="1000"></el-input-number>
+        <el-input-number v-model="movie_form.movie_runtime" controls-position="right" :min="1" :max="1000" disabled></el-input-number>
         分钟
         </el-form-item>
 
         <el-form-item label="电影评分">
-        <el-input-number v-model="movie_form.movie_rating" controls-position="right" :precision="1" :step="0.1" :min="0" :max="10"></el-input-number>
+        <el-input-number v-model="movie_form.movie_rating" controls-position="right" :precision="1" :step="0.1" :min="0" :max="10" disabled></el-input-number>
         </el-form-item>
 
         <el-form-item label="喜爱程度">
@@ -86,14 +88,15 @@
         </el-form-item>
 
         <el-form-item label="是否看过">
-        <el-switch v-model="movie_form.have_seen"></el-switch>
+        <el-switch v-model="movie_form.have_seen" active-value="1" inactive-value="0"></el-switch>
         </el-form-item>
 
         <el-form-item label="创建时间">
         <el-date-picker
         v-model="movie_form.create_time"
         type="datetime"
-        placeholder="选择日期时间">
+        placeholder="选择日期时间"
+        disabled>
         </el-date-picker>
         </el-form-item>
 
@@ -109,8 +112,8 @@
 
 
     <el-dialog title="新增电影" :visible.sync="dialogAddFormVisible">
-    <el-form :model="movie_form">
-        <el-form-item label="电影名称">
+    <el-form :model="movie_form" :rules="add_dialog_rules">
+        <el-form-item label="电影名称" prop='movie_name'>
         <el-input v-model="movie_form.movie_name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="电影时长">
@@ -127,7 +130,7 @@
         </el-form-item>
 
         <el-form-item label="是否看过">
-        <el-switch v-model="movie_form.have_seen"></el-switch>
+        <el-switch v-model="movie_form.have_seen" active-value="1" inactive-value="0"></el-switch>
         </el-form-item>
 
         <el-form-item label="创建时间">
@@ -171,7 +174,12 @@
             create_time: '',
             origin: ''
         },
-        dialogEditLoading: false
+        dialogEditLoading: false,
+        add_dialog_rules: {
+          movie_name: [
+            {required: true, message:'请输入电影名称', trigger: 'blur'}
+          ]
+        }
       }
     },
 
@@ -258,6 +266,19 @@
             .then(function(response){
               console.log('update success'+response.data);
               that.dialogEditFormVisible = false;
+              let id = prop_diff['id'];
+              delete prop_diff['id'];
+              for(let i=0; i< that.tableData.length; i++){
+                let ele = that.tableData[i];
+                if(ele['index'] == id){
+                  // console.log('find it')
+                  for(let prop in prop_diff){
+                    ele[prop] = prop_diff[prop];
+                    console.log
+                  }
+                  break;
+                }
+              }
             })
             .catch(function(error){
               console.log(error);
@@ -272,8 +293,14 @@
         }
 
       },
+      addMovieData(){
+        Object.keys(this.movie_form).forEach(key => this.movie_form[key] = '');
+        this.movie_form.have_seen = 0;
+        this.movie_form.create_time = new Date();
+        this.dialogAddFormVisible = true;
+      },
       addDialogOk(){
-
+        
       }
     }
   }

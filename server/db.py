@@ -73,7 +73,7 @@ class db:
         UPDATE_MOVIE_STATEMENT = f'''
         UPDATE movies SET {','.join(tmp_l)} WHERE id = ?
         '''
-        print(UPDATE_MOVIE_STATEMENT, id)
+        # print(UPDATE_MOVIE_STATEMENT, id)
 
         with self._db:
             self._db.execute(UPDATE_MOVIE_STATEMENT, (id,))

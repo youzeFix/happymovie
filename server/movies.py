@@ -55,6 +55,7 @@ def update_one_movie():
         return {'statusCode': -1, 'message':'req data is not json'}
     elif r.get('id') is None:
         logger.warning('update data does not contain id')
+        print(r)
         return {'statusCode': -1, 'message':'update data must contain id'}
 
     db = get_db()

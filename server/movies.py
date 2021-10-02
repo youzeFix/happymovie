@@ -44,7 +44,21 @@ def insert_one_movie():
     temp_params = [r.get(key) for key, _ in r.items()]
     db.insert_movie(*temp_params)
 
-    return {'statusCode': 0, 'message':'insert movie success'}
+    row = db.query_last_insert_row()
+    data = {
+        'index': row[0],
+        'movie_name': row[1],
+        'movie_runtime': row[2],
+        'movie_rating': row[3],
+        'movie_likability': row[4],
+        'have_seen': row[5],
+        'origin': row[6],
+        'create_time': row[7]
+    }
+
+    res = {'statusCode': 0, 'message':'insert movie success', 'data': data}
+
+    return json.dumps(res, default=datetime_to_json, ensure_ascii=False)
 
 
 @bp.route('/', methods=['PUT'])

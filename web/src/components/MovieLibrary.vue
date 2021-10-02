@@ -112,7 +112,7 @@
 
 
     <el-dialog title="新增电影" :visible.sync="dialogAddFormVisible">
-    <el-form :model="movie_form" :rules="add_dialog_rules">
+    <el-form :model="movie_form" :rules="add_dialog_rules" v-loading="dialogAddLoading">
         <el-form-item label="电影名称" prop='movie_name'>
         <el-input v-model="movie_form.movie_name" autocomplete="off"></el-input>
         </el-form-item>
@@ -175,6 +175,7 @@
             origin: ''
         },
         dialogEditLoading: false,
+        dialogAddLoading: false,
         add_dialog_rules: {
           movie_name: [
             {required: true, message:'请输入电影名称', trigger: 'blur'}
@@ -265,7 +266,6 @@
             this.$axios.put('/movie/', prop_diff, {headers:headerJSON})
             .then(function(response){
               console.log('update success'+response.data);
-              that.dialogEditFormVisible = false;
               let id = prop_diff['id'];
               delete prop_diff['id'];
               for(let i=0; i< that.tableData.length; i++){
@@ -285,6 +285,7 @@
             })
             .then(function(){
               that.dialogEditLoading=false;
+              that.dialogEditFormVisible = false;
             })
           }
         }else{
@@ -300,7 +301,28 @@
         this.dialogAddFormVisible = true;
       },
       addDialogOk(){
-        
+        let that = this;
+        this.dialogAddLoading = true;
+        this.$axios.post('/movie/', {
+          'movie_name': this.movie_form.movie_name,
+          'movie_runtime': this.movie_form.movie_runtime,
+          'movie_rating': this.movie_form.movie_rating,
+          'movie_likability': this.movie_form.movie_likability,
+          'have_seen': this.movie_form.have_seen,
+          'create_time': this.movie_form.create_time,
+          'origin': this.movie_form.origin
+        })
+        .then(function(response){
+          console.log(response.data);
+          that.tableData.push(response.data['data']);
+        })
+        .catch(function(error){
+          console.log(error)
+        })
+        .then(function(){
+          that.dialogAddLoading = false;
+          that.dialogAddFormVisible=false;
+        })
       }
     }
   }

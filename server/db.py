@@ -57,6 +57,19 @@ class db:
 
         return res
 
+    def query_one_movie_by_id(self, id) -> Tuple:
+        QUERY_ONE_MOVIE_STATEMENT = '''
+        SELECT * FROM movies WHERE id = ?
+        '''
+
+        res = self._db.execute(QUERY_ONE_MOVIE_STATEMENT, (id,)).fetchone()
+
+        return res
+
+    def query_last_insert_row(self) -> Tuple:
+        last_insert_row_id = self._db.execute('SELECT LAST_INSERT_ROWID()')
+        return self.query_one_movie_by_id(last_insert_row_id)
+
     def remove_movie(self, id):
         REMOVE_MOVIE_STATEMENT = '''
         DELETE FROM movies WHERE id = ?

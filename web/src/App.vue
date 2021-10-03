@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <NavMenuHor/>
-    <keep-alive include="Home">
+    <keep-alive include="MovieLibrary">
       <router-view/>
     </keep-alive>
   </div>

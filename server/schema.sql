@@ -8,5 +8,5 @@ CREATE TABLE movies (
     movie_likability INTEGER,
     have_seen INTEGER,
     origin TEXT,
-    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    create_time TIMESTAMP NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP,'localtime'))
 );

@@ -22,3 +22,13 @@ $env:FLASK_APP = "server"
 $env:FLASK_ENV = "development"
 flask run
 ```
+
+### 初始化数据库
+```sh
+flask init-db
+```
+
+### 导入数据
+```sh
+flask import-movies --filename top250.xlsx
+```

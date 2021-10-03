@@ -2,6 +2,7 @@ from flask import Blueprint, g, request, current_app
 import json
 import logging
 from .utils import datetime_to_json
+import datetime
 
 from .db import get_db
 
@@ -41,8 +42,16 @@ def insert_one_movie():
 
     db = get_db()
 
-    temp_params = [r.get(key) for key, _ in r.items()]
-    db.insert_movie(*temp_params)
+    temp_params = {key:r.get(key) for key, _ in r.items()}
+    if temp_params.get('create_time') is not None:
+        try:
+
+            temp_params['create_time'] = datetime.datetime.strptime(temp_params.get('create_time'), '%Y-%m-%d %H:%M:%S')
+            print(temp_params['create_time'])
+        except Exception as e:
+            print(e)
+            return {'statusCode': -1, 'message':'date format must match %Y-%m-%d %H:%M:%S'}
+    db.insert_movie(**temp_params)
 
     row = db.query_last_insert_row()
     data = {

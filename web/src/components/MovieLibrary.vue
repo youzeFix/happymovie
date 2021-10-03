@@ -4,6 +4,7 @@
         <el-button type="success" icon="el-icon-refresh" @click="loadMovieData()">刷新</el-button>
         <el-button type="primary" icon="el-icon-edit-outline" @click="editMovieData()" :disabled='edit_disabled'>编辑</el-button>
         <el-button type="primary" icon="el-icon-plus" @click="addMovieData()">新增</el-button>
+        <el-button type="danger" icon="el-icon-delete" @click="deleteMovieData()">删除</el-button>
         <el-button @click="setCurrent()">取消选择</el-button>
     </div>
     
@@ -137,7 +138,8 @@
         <el-date-picker
         v-model="movie_form.create_time"
         type="datetime"
-        placeholder="选择日期时间">
+        placeholder="选择日期时间"
+        value-format='yyyy-MM-dd HH:mm:ss'>
         </el-date-picker>
         </el-form-item>
 
@@ -147,7 +149,7 @@
     </el-form>
     <div slot="footer" class="dialog-footer">
         <el-button @click="dialogAddFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogAddFormVisible = false">确 定</el-button>
+        <el-button type="primary" @click="addDialogOk()">确 定</el-button>
     </div>
     </el-dialog>
     
@@ -156,6 +158,7 @@
 
 <script>
   export default {
+    name: 'movie-library',
     data() {
       return {
         tableData: [],
@@ -235,16 +238,27 @@
       },
       editMovieData(){
           console.log(this.currentRow);
-          this.movie_form.movie_id = this.currentRow.index;
-          this.movie_form.movie_name = this.currentRow.movie_name;
-          this.movie_form.movie_runtime = this.currentRow.movie_runtime.match(/(\d+)分钟/)[1];
-          this.movie_form.movie_rating = this.currentRow.movie_rating;
-          this.movie_form.movie_likability = this.currentRow.movie_likability;
-          this.movie_form.have_seen = this.currentRow.have_seen;
-          this.movie_form.create_time = this.currentRow.create_time;
-          this.movie_form.origin = this.currentRow.origin;
-          this.movie_copy = Object.assign({}, this.movie_form);
-          this.dialogEditFormVisible = true;
+          if(!this.currentRow){
+            this.$message({
+              showClose: true,
+              message: '请选择一行',
+              type: 'error'
+            });
+          }
+          else
+          {
+            this.movie_form.movie_id = this.currentRow.index;
+            this.movie_form.movie_name = this.currentRow.movie_name;
+            this.movie_form.movie_runtime = this.currentRow.movie_runtime.match(/(\d+)分钟/)[1];
+            this.movie_form.movie_rating = this.currentRow.movie_rating;
+            this.movie_form.movie_likability = this.currentRow.movie_likability;
+            this.movie_form.have_seen = this.currentRow.have_seen;
+            this.movie_form.create_time = this.currentRow.create_time;
+            this.movie_form.origin = this.currentRow.origin;
+            this.movie_copy = Object.assign({}, this.movie_form);
+            this.dialogEditFormVisible = true;
+          }
+          
       },
       editDialogOk(){
         if(!this.isDeepObjectEqual(this.movie_copy, this.movie_form)){
@@ -297,7 +311,7 @@
       addMovieData(){
         Object.keys(this.movie_form).forEach(key => this.movie_form[key] = '');
         this.movie_form.have_seen = 0;
-        this.movie_form.create_time = new Date();
+        this.movie_form.create_time = "2021-10-3 11:17:53";
         this.dialogAddFormVisible = true;
       },
       addDialogOk(){
@@ -305,7 +319,7 @@
         this.dialogAddLoading = true;
         this.$axios.post('/movie/', {
           'movie_name': this.movie_form.movie_name,
-          'movie_runtime': this.movie_form.movie_runtime,
+          'movie_runtime': this.movie_form.movie_runtime+'分钟',
           'movie_rating': this.movie_form.movie_rating,
           'movie_likability': this.movie_form.movie_likability,
           'have_seen': this.movie_form.have_seen,
@@ -322,6 +336,31 @@
         .then(function(){
           that.dialogAddLoading = false;
           that.dialogAddFormVisible=false;
+        })
+      },
+      deleteMovieData(){
+        let id = this.currentRow.index;
+        let that = this;
+        let table_index = -1;
+        for(let i=0; i<this.tableData.length; i++){
+          if(this.tableData[i]['index'] == id){
+            table_index = i;
+            break;
+          }
+        }
+        console.log(this.currentRow+table_index);
+
+        this.loading = true;
+        this.$axios.delete('/movie/',{params:{'id':id}})
+        .then(function(response){
+          console.log(response.data);
+          that.tableData.splice(table_index, 1);
+        })
+        .catch(function(error){
+          console.log(error);
+        })
+        .then(function(){
+          that.loading = false;
         })
       }
     }

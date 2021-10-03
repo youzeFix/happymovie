@@ -7,6 +7,7 @@ from flask.cli import with_appcontext
 import time
 from typing import Tuple, List
 import pandas
+import datetime
 
 def get_db():
     if 'db' not in g:
@@ -38,12 +39,19 @@ class db:
     def close(self):
         self._db.close()
 
-    def insert_movie(self, movie_name:str, movie_runtime:int, movie_rating:float, movie_likability:int=1, have_seen:int=0, origin:str=None):
-        INSERT_MOVIE_STATEMENT = '''
-        INSERT INTO movies (movie_name,movie_runtime,movie_rating,movie_likability,have_seen,origin) VALUES (?,?,?,?,?,?) 
+    def insert_movie(self, movie_name:str, movie_runtime:int, movie_rating:float, movie_likability:int=1, have_seen:int=0, origin:str=None, create_time:datetime.datetime=None):
+        loc = locals()
+        del loc['self']
+        sql_column = list(loc.keys())
+        if create_time is None:
+            sql_column.remove('create_time')
+        
+        INSERT_MOVIE_STATEMENT = f'''
+        INSERT INTO movies ({','.join(sql_column)}) VALUES ({','.join(['?']*len(sql_column))}) 
         '''
 
-        sql_params = (movie_name, movie_runtime, movie_rating, movie_likability, have_seen, origin)
+        sql_params = ([loc[key] for key in sql_column])
+        # sql_params = (movie_name, movie_runtime, movie_rating, movie_likability, have_seen, origin, create_time)
         with self._db:
             self._db.execute(INSERT_MOVIE_STATEMENT, sql_params)
 
@@ -67,7 +75,8 @@ class db:
         return res
 
     def query_last_insert_row(self) -> Tuple:
-        last_insert_row_id = self._db.execute('SELECT LAST_INSERT_ROWID()')
+        last_insert_row_id = self._db.execute('SELECT LAST_INSERT_ROWID()').fetchone()[0]
+        print('last insert row id is', last_insert_row_id)
         return self.query_one_movie_by_id(last_insert_row_id)
 
     def remove_movie(self, id):
@@ -77,7 +86,7 @@ class db:
         with self._db:
             self._db.execute(REMOVE_MOVIE_STATEMENT, (id,))
 
-    def update_movie(self, id:int, movie_rating:float=None, movie_likability:int=None, have_seen:int=None, origin:str=None):
+    def update_movie(self, id:int, movie_runtime:int=None, movie_rating:float=None, movie_likability:int=None, have_seen:int=None, origin:str=None):
         params = locals()
         del params['id']
         del params['self']

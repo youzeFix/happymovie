@@ -65,6 +65,18 @@ class db:
 
         return res
 
+    def query_all_movies_havent_seen(self) -> List[Tuple]:
+        STATEMENT = '''
+        SELECT * FROM movies WHERE have_seen=0
+        '''
+
+        res = []
+        for row in self._db.execute(STATEMENT):
+            res.append(tuple(row))
+
+        return res
+
+
     def query_one_movie_by_id(self, id) -> Tuple:
         QUERY_ONE_MOVIE_STATEMENT = '''
         SELECT * FROM movies WHERE id = ?

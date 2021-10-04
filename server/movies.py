@@ -100,3 +100,24 @@ def remove_one_movie():
 
     return {'statusCode': 0, 'message':'remove movie success'}
 
+
+@bp.route('/pick', methods=['POST'])
+def pick_movie():
+    r = request.get_json()
+    if r is None:
+        logger.warning('req_data is none, may be content-type is not application/json!')
+        return {'statusCode': -1, 'message':'req data is not json'}
+
+    pick_type = r.get('type')
+    value = r.get('value')
+    if pick_type is None or value is None:
+        logger.error('pick_type or value is null, parameter error')
+        return {'statusCode': -1, 'message':'pick_type or value is null, parameter error'}
+
+    db = get_db()
+
+    movies_havent_seen = db.query_all_movies_havent_seen()
+    
+
+
+    

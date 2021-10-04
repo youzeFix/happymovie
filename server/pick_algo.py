@@ -11,9 +11,11 @@ from multiprocessing import Pool, Queue
 
 @dataclass(order=True)
 class Movie:
+    movie_id: int=field(compare=False)
     movie_length: int=field(compare=False)
     movie_name: str=field(compare=False)
     movie_rating: float
+    movie_likability: int=field(compare=False)
 
 def index(a, x):
     'Locate the leftmost value exactly equal to x'

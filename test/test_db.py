@@ -1,12 +1,13 @@
 import unittest
+from server import create_app
 from server.db import get_db
 import pprint
 
 class TestDBMethods(unittest.TestCase):
 
     def test_query_all_movies(self):
-        from flask import current_app
-        with current_app.app_context():
+        app = create_app()
+        with app.app_context():
             db = get_db()
             res = db.query_all_movies()
             pprint.pprint(res)

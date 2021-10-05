@@ -4,7 +4,7 @@ happy movie, useful
 ## 执行测试
 在根目录下执行命令
 ```sh
-python -m test.test_main
+python -m test.test_pick_algo
 ```
 测试db
 ```sh
@@ -13,7 +13,7 @@ python -m test.test_db
 
 测试单个方法
 ```
-python -m unittest test.test_main.TestMainMethods.test_get_maximized_pleasure
+python -m unittest test.test_pick_algo.TestMainMethods.test_get_maximized_pleasure
 ```
 
 ## 启动flask

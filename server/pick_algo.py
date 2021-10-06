@@ -58,7 +58,7 @@ def pick_movies_by_time(time_have:int, movies:List[Tuple]) -> List[Tuple]:
     movies_map = {}
     for m in movies:
         # index, movie_runtime, movie_name, movie_rating*movie_likability
-        movies_input.append(Movie(m[0], m[2], m[1], m[3]*m[4]))
+        movies_input.append(Movie(m[0], m[2], m[1], -m[3]*m[4]))
         movies_map[m[0]] = m
     pick_output = get_maximized_pleasure(time_have, movies_input)
 

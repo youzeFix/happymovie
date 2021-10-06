@@ -124,21 +124,39 @@ def init_db_command():
 @with_appcontext
 def import_movies(filename):
     with current_app.open_resource(filename) as f:
+        # 必须列
         required_col = ['movie_name', 'movie_runtime', 'movie_rating']
+        # 列范围（所有列）
         col_scope = ['movie_name', 'movie_runtime', 'movie_rating', 'movie_likability', 'have_seen', 'origin']
         excel = pandas.read_excel(f)
+        # 获取在列范围内的列
         cols = [col for col in excel.columns if col in col_scope]
+        # 检查是否包含必须列
         for col in required_col:
             if col not in cols:
                 current_app.logger.error(f'there must be {col} column')
                 return
 
+        # 提取数据
         data = excel.loc[:, cols]
         db = get_db()
+        # 清洗数据
+        def transform_runtime(movie_runtime: str):
+            if not movie_runtime.isdigit():
+                movie_runtime = movie_runtime.split('分钟')[0]
+                if movie_runtime.isdigit():
+                    return movie_runtime
+            else:
+                return movie_runtime
 
+            return 0
+
+        data['movie_runtime'] = data['movie_runtime'].apply(transform_runtime)
+        # 列排序
         cols = required_col.copy()
         cols.extend([i for i in cols if i not in required_col])
 
+        # 插入数据库
         for index, row in data.iterrows():
             param_dict = {k:row[k] for k in cols}
             db.insert_movie(**param_dict)

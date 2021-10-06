@@ -249,7 +249,7 @@
           {
             this.movie_form.movie_id = this.currentRow.index;
             this.movie_form.movie_name = this.currentRow.movie_name;
-            this.movie_form.movie_runtime = this.currentRow.movie_runtime.match(/(\d+)分钟/)[1];
+            this.movie_form.movie_runtime = this.currentRow.movie_runtime;
             this.movie_form.movie_rating = this.currentRow.movie_rating;
             this.movie_form.movie_likability = this.currentRow.movie_likability;
             this.movie_form.have_seen = this.currentRow.have_seen;
@@ -319,7 +319,7 @@
         this.dialogAddLoading = true;
         this.$axios.post('/movie/', {
           'movie_name': this.movie_form.movie_name,
-          'movie_runtime': this.movie_form.movie_runtime+'分钟',
+          'movie_runtime': this.movie_form.movie_runtime,
           'movie_rating': this.movie_form.movie_rating,
           'movie_likability': this.movie_form.movie_likability,
           'have_seen': this.movie_form.have_seen,

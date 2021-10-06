@@ -13,7 +13,7 @@ python -m test.test_db
 
 测试单个方法
 ```
-python -m unittest test.test_pick_algo.TestMainMethods.test_get_maximized_pleasure
+python -m unittest test.test_pick_algo.TestPickAlgoMethods.test_get_maximized_pleasure
 ```
 
 ## 启动flask

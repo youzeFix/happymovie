@@ -1,5 +1,5 @@
 <template>
-<div class="pick-tabs">
+<div class="pick-tabs" v-loading="pick_loading">
   <el-tabs class="movie-pick-tabs" v-model="activeTabName" @tab-click="handleClick">
     <el-tab-pane label="按时长" name="time_length_tab">
       <el-col :span="5">
@@ -32,11 +32,13 @@
 </template>
 <script>
   export default {
+    name: 'movie-pick',
     data() {
       return {
         activeTabName: 'time_length_tab',
         time_length_input: '',
-        movies_num_input: ''
+        movies_num_input: '',
+        pick_loading: false
       };
     },
     methods: {
@@ -44,7 +46,23 @@
         console.log(tab, event);
       },
       timeLengthPickOK(){
-        this.$router.push('/pick-result')
+        let that = this;
+        this.pick_loading = true;
+        this.$axios.post('/movie/pick', {
+          'type': 1,
+          'value': this.time_length_input
+        })
+        .then(function(response){
+          console.log(response.data);
+
+          that.$router.push({name: 'MoviePickResult', params:{data: response.data['data']}})
+        })
+        .catch(function(error){
+          console.log(error)
+        })
+        .then(function(){
+          that.pick_loading=false;
+        })
       },
       movieNumsPickOK(){
         this.$router.push('/pick-result')

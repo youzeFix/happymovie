@@ -3,6 +3,7 @@ import json
 import logging
 from .utils import datetime_to_json
 import datetime
+from .pick_algo import pick_movies_by_time
 
 from .db import get_db
 
@@ -109,7 +110,7 @@ def pick_movie():
         return {'statusCode': -1, 'message':'req data is not json'}
 
     pick_type = r.get('type')
-    value = r.get('value')
+    value = int(r.get('value'))
     if pick_type is None or value is None:
         logger.error('pick_type or value is null, parameter error')
         return {'statusCode': -1, 'message':'pick_type or value is null, parameter error'}
@@ -117,6 +118,25 @@ def pick_movie():
     db = get_db()
 
     movies_havent_seen = db.query_all_movies_havent_seen()
+
+    pick_res = pick_movies_by_time(value, movies_havent_seen)
+
+    data = []
+    for row in pick_res:
+        data.append({
+            'index': row[0],
+            'movie_name': row[1],
+            'movie_runtime': row[2],
+            'movie_rating': row[3],
+            'movie_likability': row[4],
+            'have_seen': row[5],
+            'origin': row[6],
+            'create_time': row[7]
+        })
+
+    res = {'statusCode': 0, 'message':'pick successful', 'data': data}
+
+    return json.dumps(res, default=datetime_to_json, ensure_ascii=False)
     
 
 

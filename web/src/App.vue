@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <NavMenuHor/>
-    <keep-alive include="MovieLibrary">
+    <keep-alive include="movie-library,movie-pick">
       <router-view/>
     </keep-alive>
   </div>

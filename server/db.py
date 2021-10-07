@@ -12,7 +12,6 @@ import datetime
 def get_db():
     if 'db' not in g:
         g.db = db()
-        g.db.row_factory = sqlite3.Row
 
     return g.db
 
@@ -35,6 +34,7 @@ class db:
             current_app.config['DATABASE'],
             detect_types=sqlite3.PARSE_DECLTYPES
         )
+        self._db.row_factory = sqlite3.Row
 
     def close(self):
         self._db.close()

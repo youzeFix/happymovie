@@ -38,16 +38,16 @@ def login():
         db = get_db()
         error = None
         user = db.query_user_by_username(username)
-        # print(user)
+        print(user)
 
         if user is None:
             error = 'Incorrect username.'
-        elif not check_password_hash(user[2], password):
+        elif not check_password_hash(user['password'], password):
             error = 'Incorrect password.'
 
         if error is None:
             session.clear()
-            session['user_id'] = user[0]
+            session['user_id'] = user['id']
             return {'statusCode':0, 'message':'login success'}
 
     return {'statusCode':-1, 'message':f'login fail, {error}'}

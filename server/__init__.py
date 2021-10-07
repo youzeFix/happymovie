@@ -45,10 +45,9 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World111!'
 
-    from . import db
+    from . import db, movies, auth
     db.init_app(app)
-
-    from . import movies
     app.register_blueprint(movies.bp)
+    app.register_blueprint(auth.bp)
     
     return app

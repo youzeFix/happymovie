@@ -111,6 +111,32 @@ class db:
 
         with self._db:
             self._db.execute(UPDATE_MOVIE_STATEMENT, (id,))
+
+    def query_user_by_username(self, username:str) -> Tuple:
+        STATEMENT = '''
+        SELECT * FROM user WHERE username = ?
+        '''
+
+        res = self._db.execute(STATEMENT, (username,)).fetchone()
+        return res
+
+    def query_user_by_id(self, id:int) -> Tuple:
+        STATEMENT = '''
+        SELECT * FROM user WHERE id = ?
+        '''
+
+        res = self._db.execute(STATEMENT, (id,)).fetchone()
+        return res
+
+    def insert_user(self, username, password):
+        STATEMENT = '''
+        INSERT INTO user (username, password) VALUES (?, ?)
+        '''
+
+        with self._db:
+            self._db.execute(STATEMENT, (username, password))
+
+        
     
 @click.command('init-db')
 @with_appcontext

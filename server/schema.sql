@@ -3,8 +3,10 @@ DROP TABLE IF EXISTS movies;
 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nickname TEXT,
   username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL
+  password TEXT NOT NULL,
+  usertype INTEGER NOT NULL
 );
 
 CREATE TABLE movies (

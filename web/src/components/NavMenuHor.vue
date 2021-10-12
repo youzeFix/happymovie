@@ -53,22 +53,23 @@
   </div>
 
   <el-dialog title="登录" :visible.sync="dialogLoginVisible">
-  <el-form :model="form">
+  <el-form :model="loginForm" v-loading="loginDialogLoading">
     <el-form-item label="用户名">
       <el-input v-model="loginForm.username" ></el-input>
     </el-form-item>
     <el-form-item label="密码">
       <el-input v-model="loginForm.password" show-password></el-input>
     </el-form-item>
+    <el-checkbox v-model="keep_login">保持登录</el-checkbox>
   </el-form>
   <div slot="footer" class="dialog-footer">
     <el-button @click="dialogLoginVisible = false">取 消</el-button>
-    <el-button type="primary" @click="dialogLoginVisible = false">确 定</el-button>
+    <el-button type="primary" @click="loginDialogButtonOK()">确 定</el-button>
   </div>
   </el-dialog>
 
   <el-dialog title="注册" :visible.sync="dialogRegisterVisible">
-  <el-form :model="form">
+  <el-form :model="registerForm">
     <el-form-item label="昵称">
       <el-input v-model="registerForm.nickname" ></el-input>
     </el-form-item>
@@ -110,7 +111,9 @@
           password:''
         },
         dialogLoginVisible: false,
-        dialogRegisterVisible: false
+        dialogRegisterVisible: false,
+        keep_login: false,
+        loginDialogLoading: false
       }
     },
     methods: {
@@ -131,6 +134,7 @@
       handleCommandNotLogged(command){
         switch (command) {
           case "login":
+            
             this.dialogLoginVisible = true;
             break;
 
@@ -141,6 +145,38 @@
           default:
             break;
         }
+      },
+      loginDialogButtonOK(){
+        let that=this;
+        this.loginDialogLoading = true;
+        this.$axios({url: '/auth/login',
+        method: 'post',
+        data: {username: this.loginForm.username, password: this.loginForm.password},
+        transformRequest: [function (data) {
+          // Do whatever you want to transform the data
+          let ret = ''
+          for (let it in data) {
+            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+              }
+              return ret
+        }],
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        })
+        .then(function(response){
+          console.log(response.data)
+          let resp_data = JSON.parse(response.data['data'])
+          that.userinfo.nickname = resp_data['nickname']
+          that.userinfo.username = resp_data['username']
+          that.userinfo.usertype = resp_data['usertype']
+        })
+        .catch(function(error){
+          console.log(error)
+        })
+        .then(function(){
+          that.loginDialogLoading = false;
+        })
       }
     }
     

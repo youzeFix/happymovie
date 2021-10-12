@@ -4,18 +4,18 @@ import logging
 from .utils import datetime_to_json
 import datetime
 from .pick_algo import pick_movies_by_time
+from .auth import login_required
 
 from .db import get_db
 
-# logger = current_app.logger
 logger = logging.getLogger(__name__)
 bp = Blueprint('movies', __name__, url_prefix='/movie')
 
-
 @bp.route('/all', methods=['GET'])
+@login_required
 def get_all_movies():
     db = get_db()
-    db_res = db.query_all_movies()
+    db_res = db.query_all_movies_by_userid(g.user['id'])
     # print(db_res)
     res = []
 
@@ -35,6 +35,7 @@ def get_all_movies():
 
 
 @bp.route('/', methods=['POST'])
+@login_required
 def insert_one_movie():
     r = request.get_json()
     if r is None:
@@ -46,15 +47,16 @@ def insert_one_movie():
     temp_params = {key:r.get(key) for key, _ in r.items()}
     if temp_params.get('create_time') is not None:
         try:
-
             temp_params['create_time'] = datetime.datetime.strptime(temp_params.get('create_time'), '%Y-%m-%d %H:%M:%S')
             print(temp_params['create_time'])
         except Exception as e:
             print(e)
             return {'statusCode': -1, 'message':'date format must match %Y-%m-%d %H:%M:%S'}
-    db.insert_movie(**temp_params)
 
-    row = db.query_last_insert_row()
+    temp_params['creator_id'] = g.user['id']
+    lastrowid = db.insert_movie(**temp_params)
+
+    row = db.query_one_movie_by_id(lastrowid)
     data = {
         'index': row[0],
         'movie_name': row[1],
@@ -72,6 +74,7 @@ def insert_one_movie():
 
 
 @bp.route('/', methods=['PUT'])
+@login_required
 def update_one_movie():
     r = request.get_json()
     if r is None:
@@ -90,6 +93,7 @@ def update_one_movie():
 
 
 @bp.route('/', methods=['DELETE'])
+@login_required
 def remove_one_movie():
     movie_id = request.args.get('id', None)
     if id is None:
@@ -103,6 +107,7 @@ def remove_one_movie():
 
 
 @bp.route('/pick', methods=['POST'])
+@login_required
 def pick_movie():
     r = request.get_json()
     if r is None:
@@ -111,13 +116,13 @@ def pick_movie():
 
     pick_type = r.get('type')
     value = int(r.get('value'))
-    if pick_type is None or value is None:
+    if pick_type is None or value == 0:
         logger.error('pick_type or value is null, parameter error')
         return {'statusCode': -1, 'message':'pick_type or value is null, parameter error'}
 
     db = get_db()
 
-    movies_havent_seen = db.query_all_movies_havent_seen()
+    movies_havent_seen = db.query_all_movies_havent_seen_by_userid(g.user['id'])
 
     pick_res = pick_movies_by_time(value, movies_havent_seen)
 

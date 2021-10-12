@@ -6,7 +6,7 @@ CREATE TABLE user (
   nickname TEXT,
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
-  usertype INTEGER NOT NULL
+  usertype INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE movies (
@@ -18,5 +18,6 @@ CREATE TABLE movies (
     have_seen INTEGER,
     origin TEXT,
     create_time TIMESTAMP NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP,'localtime')),
+    creator_id INTEGER NOT NULL,
     FOREIGN KEY (creator_id) REFERENCES user (id)
 );

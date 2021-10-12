@@ -12,10 +12,24 @@ class TestDBMethods(unittest.TestCase):
             res = db.query_all_movies()
             pprint.pprint(res)
 
-    # def test_insert_movie(self):
-    #     insert_movie('movie111', 101, 9.8)
-    #     res = get_all_movies()
-    #     print(res)
+    def test_query_all_user(self):
+        print(123)
+
+    def test_query_user_by_username(self):
+        app = create_app()
+        with app.app_context():
+            db = get_db()
+            res = db.query_user_by_username('usiel1')
+            print(dict(res))
+
+    def test_insert_user(self):
+        app = create_app()
+        with app.app_context():
+            db = get_db()
+            res = db.insert_user('usiel3', '123456')
+            print(res)
+            res = db.query_all_users()
+            print(res)
 
     # def test_update_movie(self):
     #     update_movie(1, movie_rating=9.6, have_seen=1)

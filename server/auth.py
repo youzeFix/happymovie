@@ -1,5 +1,6 @@
 import functools
 
+import logging
 from flask import (
     Blueprint, g, request, session
 )
@@ -7,11 +8,13 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .db import get_db
 
+logger = logging.getLogger(__name__)
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @bp.route('/register', methods=['POST'])
 def register():
     if request.method == 'POST':
+        nickname = request.form['nickname']
         username = request.form['username']
         password = request.form['password']
         db = get_db()
@@ -25,7 +28,10 @@ def register():
             error = 'User {} is already registered.'.format(username)
 
         if error is None:
-            db.insert_user(username, generate_password_hash(password))
+            if nickname != '':
+                db.insert_user(username, generate_password_hash(password), nickname)
+            else:
+                db.insert_user(username, generate_password_hash(password))
             return {'statusCode':0, 'message':'register user success'}
 
     return {'statusCode':-1, 'message':f'register user fail, {error}'}
@@ -38,17 +44,21 @@ def login():
         db = get_db()
         error = None
         user = db.query_user_by_username(username)
-        print(user)
+        print(tuple(user))
 
         if user is None:
-            error = 'Incorrect username.'
+            error = f'Incorrect username.[{username}]'
+            logger.error(error)
         elif not check_password_hash(user['password'], password):
             error = 'Incorrect password.'
+            logger.error(error+password)
 
         if error is None:
             session.clear()
             session['user_id'] = user['id']
-            return {'statusCode':0, 'message':'login success'}
+            data = dict(user)
+            del data['password']
+            return {'statusCode':0, 'message':'login success', 'data':data}
 
     return {'statusCode':-1, 'message':f'login fail, {error}'}
 

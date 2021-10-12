@@ -51,9 +51,27 @@ class db:
         '''
 
         sql_params = ([loc[key] for key in sql_column])
-        # sql_params = (movie_name, movie_runtime, movie_rating, movie_likability, have_seen, origin, create_time)
         with self._db:
             self._db.execute(INSERT_MOVIE_STATEMENT, sql_params)
+
+    def insert_movie_by_userid(self, movie_name:str, movie_runtime:int, movie_rating:float, creator_id:int, movie_likability:int=1, 
+                                have_seen:int=0, origin:str=None, create_time:datetime.datetime=None):
+        loc = locals()
+        del loc['self']
+        sql_column = list(loc.keys())
+        if create_time is None:
+            sql_column.remove('create_time')
+        
+        INSERT_MOVIE_STATEMENT = f'''
+        INSERT INTO movies ({','.join(sql_column)}) VALUES ({','.join(['?']*len(sql_column))}) 
+        '''
+
+        sql_params = ([loc[key] for key in sql_column])
+        with self._db:
+            cursor = self._db.cursor()
+            cursor.execute(INSERT_MOVIE_STATEMENT, sql_params)
+            return cursor.lastrowid
+            
 
     def query_all_movies(self) -> List[Tuple]:
         QUERY_ALL_MOVIE_STATEMENT = '''
@@ -65,15 +83,32 @@ class db:
 
         return res
 
+    def query_all_movies_by_userid(self, user_id:int) -> List[Tuple]:
+        STATEMENT = '''
+        SELECT * FROM movies WHERE creator_id=?
+        '''
+        res = []
+        for row in self._db.execute(STATEMENT, (user_id,)):
+            res.append(tuple(row))
+
+        return res
+
     def query_all_movies_havent_seen(self) -> List[Tuple]:
         STATEMENT = '''
         SELECT * FROM movies WHERE have_seen=0
         '''
-
         res = []
         for row in self._db.execute(STATEMENT):
             res.append(tuple(row))
+        return res
 
+    def query_all_movies_havent_seen_by_userid(self, user_id:int) -> List[Tuple]:
+        STATEMENT = '''
+        SELECT * FROM movies WHERE have_seen=0 AND creator_id=?
+        '''
+        res = []
+        for row in self._db.execute(STATEMENT, (user_id)):
+            res.append(tuple(row))
         return res
 
 
@@ -90,6 +125,10 @@ class db:
         last_insert_row_id = self._db.execute('SELECT LAST_INSERT_ROWID()').fetchone()[0]
         print('last insert row id is', last_insert_row_id)
         return self.query_one_movie_by_id(last_insert_row_id)
+
+    def query_last_insert_row_by_userid(self, user_id:int) -> Tuple:
+        all_movies = self.query_all_movies_by_userid(user_id)
+        return all_movies[-1]
 
     def remove_movie(self, id):
         REMOVE_MOVIE_STATEMENT = '''
@@ -116,25 +155,33 @@ class db:
         STATEMENT = '''
         SELECT * FROM user WHERE username = ?
         '''
-
         res = self._db.execute(STATEMENT, (username,)).fetchone()
+        return res
+
+    def query_all_users(self) -> List[Tuple]:
+        STATEMENT = '''
+        SELECT * FROM user
+        '''
+        res = []
+        for row in self._db.execute(STATEMENT):
+            res.append(tuple(row))
         return res
 
     def query_user_by_id(self, id:int) -> Tuple:
         STATEMENT = '''
         SELECT * FROM user WHERE id = ?
         '''
-
         res = self._db.execute(STATEMENT, (id,)).fetchone()
         return res
 
-    def insert_user(self, username, password):
+    def insert_user(self, username:str, password:str, nickname:str='DearJohn'):
         STATEMENT = '''
-        INSERT INTO user (username, password) VALUES (?, ?)
+        INSERT INTO user (username, password, nickname) VALUES (?, ?, ?)
         '''
-
         with self._db:
-            self._db.execute(STATEMENT, (username, password))
+            cursor = self._db.cursor()
+            cursor.execute(STATEMENT, (username, password, nickname))
+            return cursor.lastrowid
 
         
     

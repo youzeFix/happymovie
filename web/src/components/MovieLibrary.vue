@@ -339,6 +339,14 @@
         })
       },
       deleteMovieData(){
+        if(!this.currentRow){
+            this.$message({
+              showClose: true,
+              message: '请选择一行',
+              type: 'error'
+            });
+            return
+        }
         let id = this.currentRow.index;
         let that = this;
         let table_index = -1;

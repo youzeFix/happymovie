@@ -54,7 +54,7 @@ def insert_one_movie():
             return {'statusCode': -1, 'message':'date format must match %Y-%m-%d %H:%M:%S'}
 
     temp_params['creator_id'] = g.user['id']
-    lastrowid = db.insert_movie(**temp_params)
+    lastrowid = db.insert_movie_by_userid(**temp_params)
 
     row = db.query_one_movie_by_id(lastrowid)
     data = {

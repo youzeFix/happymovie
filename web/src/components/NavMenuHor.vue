@@ -69,7 +69,7 @@
   </el-dialog>
 
   <el-dialog title="注册" :visible.sync="dialogRegisterVisible">
-  <el-form :model="registerForm">
+  <el-form :model="registerForm" v-loading="registerDialogLoading">
     <el-form-item label="昵称">
       <el-input v-model="registerForm.nickname" ></el-input>
     </el-form-item>
@@ -82,7 +82,7 @@
   </el-form>
   <div slot="footer" class="dialog-footer">
     <el-button @click="dialogRegisterVisible = false">取 消</el-button>
-    <el-button type="primary" @click="dialogRegisterVisible = false">确 定</el-button>
+    <el-button type="primary" @click="registerDialogButtonOK()">确 定</el-button>
   </div>
   </el-dialog>
   
@@ -97,6 +97,7 @@
       return {
         loggedin: false,
         userinfo: {
+          userid:0,
           nickname:'',
           username:'',
           usertype:1
@@ -113,7 +114,8 @@
         dialogLoginVisible: false,
         dialogRegisterVisible: false,
         keep_login: false,
-        loginDialogLoading: false
+        loginDialogLoading: false,
+        registerDialogLoading: false
       }
     },
     methods: {
@@ -166,16 +168,48 @@
         })
         .then(function(response){
           console.log(response.data)
-          let resp_data = JSON.parse(response.data['data'])
+          let resp_data = response.data['data']
+          that.userinfo.userid = resp_data['id']
           that.userinfo.nickname = resp_data['nickname']
           that.userinfo.username = resp_data['username']
           that.userinfo.usertype = resp_data['usertype']
+          that.loggedin = true
         })
         .catch(function(error){
           console.log(error)
         })
         .then(function(){
           that.loginDialogLoading = false;
+          that.dialogLoginVisible = false;
+        })
+      },
+      registerDialogButtonOK(){
+        let that=this;
+        this.registerDialogLoading = true;
+        this.$axios({url: '/auth/register',
+        method: 'post',
+        data: {username: this.registerForm.username, password: this.registerForm.password, nickname: this.registerForm.nickname},
+        transformRequest: [function (data) {
+          // Do whatever you want to transform the data
+          let ret = ''
+          for (let it in data) {
+            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+              }
+              return ret
+        }],
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        })
+        .then(function(response){
+          console.log(response.data);
+        })
+        .catch(function(error){
+          console.log(error)
+        })
+        .then(function(){
+          that.registerDialogLoading = false;
+          that.dialogRegisterVisible = false;
         })
       }
     }

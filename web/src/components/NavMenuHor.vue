@@ -120,13 +120,35 @@
     },
     methods: {
       handleCommandLogged(command){
+        let that = this;
         switch (command) {
           case "userinfo":
             
             break;
 
           case "logout":
-            
+            console.log('logout');
+            this.$axios.get('/auth/logout')
+            .then(function(response){
+              console.log(response.data);
+              if(response.data['statusCode'] == 0){
+                that.$message({
+                  showClose: true,
+                  message: '登出成功',
+                  type: 'success'
+                });
+                that.loggedin = false;
+              }else{
+                that.$message({
+                  showClose: true,
+                  message: '登出失败',
+                  type: 'error'
+                });
+              }
+            })
+            .catch(function(error){
+              console.log(error);
+            })
             break;
         
           default:
@@ -168,12 +190,26 @@
         })
         .then(function(response){
           console.log(response.data)
-          let resp_data = response.data['data']
-          that.userinfo.userid = resp_data['id']
-          that.userinfo.nickname = resp_data['nickname']
-          that.userinfo.username = resp_data['username']
-          that.userinfo.usertype = resp_data['usertype']
-          that.loggedin = true
+          if(response.data['statusCode'] == 0){
+            let resp_data = response.data['data']
+            that.userinfo.userid = resp_data['id']
+            that.userinfo.nickname = resp_data['nickname']
+            that.userinfo.username = resp_data['username']
+            that.userinfo.usertype = resp_data['usertype']
+            that.loggedin = true
+            that.$message({
+              showClose: true,
+              message: '登录成功。欢迎回来，'+that.userinfo.nickname+'!',
+              type: 'success'
+            });
+          }else if(response.data['statusCode'] == -1){
+            that.$message({
+              showClose: true,
+              message: '登录错误'+response.data['message'],
+              type: 'error'
+            });
+          }
+          
         })
         .catch(function(error){
           console.log(error)
@@ -203,6 +239,20 @@
         })
         .then(function(response){
           console.log(response.data);
+          let statusCode = response.data['statusCode'];
+          if(statusCode == 0){
+            that.$message({
+              showClose: true,
+              message: '注册成功',
+              type: 'success'
+            });
+          }else if(statusCode == -1){
+            that.$message({
+              showClose: true,
+              message: '注册失败'+response.data['message'],
+              type: 'error'
+            });
+          }
         })
         .catch(function(error){
           console.log(error)

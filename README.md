@@ -10,6 +10,10 @@ python -m test.test_pick_algo
 ```sh
 python -m test.test_db
 ```
+测试查询所有用户
+```sh
+python -m unittest test.test_db.TestDBMethods.test_query_all_users
+```
 
 测试单个方法
 ```

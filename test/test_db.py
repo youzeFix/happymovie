@@ -13,7 +13,11 @@ class TestDBMethods(unittest.TestCase):
             pprint.pprint(res)
 
     def test_query_all_user(self):
-        print(123)
+        app = create_app()
+        with app.app_context():
+            db = get_db()
+            res = db.query_all_users()
+            pprint.pprint(res)
 
     def test_query_user_by_username(self):
         app = create_app()

@@ -44,7 +44,8 @@ def login():
         db = get_db()
         error = None
         user = db.query_user_by_username(username)
-        print(tuple(user))
+        if user:
+            print(tuple(user))
 
         if user is None:
             error = f'Incorrect username.[{username}]'

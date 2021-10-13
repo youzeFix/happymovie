@@ -203,7 +203,18 @@
         let that = this;
         this.$axios.get('/movie/all')
         .then(function (response){
-            that.tableData = response.data;
+          console.log(response.data)
+          let statusCode = response.data['statusCode']
+          if(statusCode == 0){
+            that.tableData = response.data['data'];
+          }else if(statusCode == -1){
+            that.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            })
+          }
+            
         })
         .catch(function (error){
             console.log(error);
@@ -362,7 +373,16 @@
         this.$axios.delete('/movie/',{params:{'id':id}})
         .then(function(response){
           console.log(response.data);
-          that.tableData.splice(table_index, 1);
+          let statusCode = response.data['statusCode']
+          if(statusCode == 0){
+            that.tableData.splice(table_index, 1);
+          }else if(statusCode == -1){
+            that.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            })
+          }
         })
         .catch(function(error){
           console.log(error);

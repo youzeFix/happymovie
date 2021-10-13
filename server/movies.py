@@ -30,8 +30,10 @@ def get_all_movies():
             'origin': row[6],
             'create_time': row[7]
         })
+        
+    data = {'statusCode':0, 'message':'query success', 'data':res}
 
-    return json.dumps(res, default=datetime_to_json, ensure_ascii=False)
+    return json.dumps(data, default=datetime_to_json, ensure_ascii=False)
 
 
 @bp.route('/', methods=['POST'])

@@ -34,5 +34,5 @@ flask init-db
 
 ### 导入数据
 ```sh
-flask import-movies --filename top250.xlsx
+flask import-movies --filename top250.xlsx --creatorid 1
 ```

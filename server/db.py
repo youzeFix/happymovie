@@ -194,8 +194,9 @@ def init_db_command():
 
 @click.command('import-movies')
 @click.option('--filename', default='movies.xlsx', help='xlsx file name to be imported')
+@click.option('--creatorid', 'creator_id', help='creator id')
 @with_appcontext
-def import_movies(filename):
+def import_movies(filename, creator_id):
     with current_app.open_resource(filename) as f:
         # 必须列
         required_col = ['movie_name', 'movie_runtime', 'movie_rating']
@@ -232,7 +233,8 @@ def import_movies(filename):
         # 插入数据库
         for index, row in data.iterrows():
             param_dict = {k:row[k] for k in cols}
-            db.insert_movie(**param_dict)
+            param_dict['creator_id'] = creator_id
+            db.insert_movie_by_userid(**param_dict)
 
         print(db.query_all_movies())
 

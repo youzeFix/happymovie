@@ -12,6 +12,13 @@ class TestDBMethods(unittest.TestCase):
             res = db.query_all_movies()
             pprint.pprint(res)
 
+    def test_query_all_movies_by_userid(self):
+        app = create_app()
+        with app.app_context():
+            db = get_db()
+            res = db.query_all_movies_by_userid(1)
+            pprint.pprint(res)
+
     def test_query_all_user(self):
         app = create_app()
         with app.app_context():

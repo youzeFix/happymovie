@@ -95,7 +95,6 @@
   export default {
     data(){
       return {
-        loggedin: false,
         userinfo: {
           userid:0,
           nickname:'',
@@ -118,6 +117,11 @@
         registerDialogLoading: false
       }
     },
+    computed: {
+      loggedin(){
+        return this.$store.state.logged
+      }
+    },
     methods: {
       handleCommandLogged(command){
         let that = this;
@@ -137,7 +141,7 @@
                   message: '登出成功',
                   type: 'success'
                 });
-                that.loggedin = false;
+                that.$store.commit('logged_out')
               }else{
                 that.$message({
                   showClose: true,
@@ -196,7 +200,7 @@
             that.userinfo.nickname = resp_data['nickname']
             that.userinfo.username = resp_data['username']
             that.userinfo.usertype = resp_data['usertype']
-            that.loggedin = true
+            that.$store.commit('logged_in')
             that.$message({
               showClose: true,
               message: '登录成功。欢迎回来，'+that.userinfo.nickname+'!',

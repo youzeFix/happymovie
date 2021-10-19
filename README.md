@@ -12,7 +12,7 @@ python -m test.test_db
 ```
 测试查询所有用户
 ```sh
-python -m unittest test.test_db.TestDBMethods.test_query_all_users
+python -m unittest test.test_db.TestDBMethods.test_query_all_user
 ```
 
 测试单个方法

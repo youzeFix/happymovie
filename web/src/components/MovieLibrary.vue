@@ -186,6 +186,21 @@
         }
       }
     },
+    computed: {
+      loggedin(){
+        return this.$store.state.logged
+      }
+    },
+    watch: {
+      loggedin: function(newState){
+        // console.log('new' + newState)
+        if(newState){
+          this.loadMovieData()
+        }else{
+          this.tableData = []
+        }
+      }
+    },
 
     methods: {
       setCurrent(row) {
@@ -199,6 +214,14 @@
         this.edit_disabled=false;
       },
       loadMovieData(){
+        if(!this.loggedin){
+          this.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            });
+          return
+        }
         this.loading=true
         let that = this;
         this.$axios.get('/movie/all')
@@ -248,6 +271,14 @@
         return (obj1Props.every(prop => this.isDeepObjectEqual(obj1[prop], obj2[prop])));
       },
       editMovieData(){
+        if(!this.loggedin){
+          this.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            });
+          return
+        }
           console.log(this.currentRow);
           if(!this.currentRow){
             this.$message({
@@ -304,6 +335,11 @@
                   break;
                 }
               }
+              that.$message({
+              showClose: true,
+              message: '修改成功',
+              type: 'success'
+              })
             })
             .catch(function(error){
               console.log(error);
@@ -320,6 +356,14 @@
 
       },
       addMovieData(){
+        if(!this.loggedin){
+          this.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            });
+          return
+        }
         Object.keys(this.movie_form).forEach(key => this.movie_form[key] = '');
         this.movie_form.have_seen = 0;
         this.movie_form.create_time = "2021-10-3 11:17:53";
@@ -339,7 +383,21 @@
         })
         .then(function(response){
           console.log(response.data);
-          that.tableData.push(response.data['data']);
+          if(response.data['statusCode'] == -1){
+            that.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            });
+          }else{
+            that.tableData.push(response.data['data']);
+            that.$message({
+              showClose: true,
+              message: '新增成功',
+              type: 'success'
+            })
+          }
+          
         })
         .catch(function(error){
           console.log(error)
@@ -350,6 +408,14 @@
         })
       },
       deleteMovieData(){
+        if(!this.loggedin){
+          this.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            });
+          return
+        }
         if(!this.currentRow){
             this.$message({
               showClose: true,
@@ -376,6 +442,11 @@
           let statusCode = response.data['statusCode']
           if(statusCode == 0){
             that.tableData.splice(table_index, 1);
+            that.$message({
+              showClose: true,
+              message: '删除成功',
+              type: 'success'
+            })
           }else if(statusCode == -1){
             that.$message({
               showClose: true,

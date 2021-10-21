@@ -8,6 +8,7 @@ import time
 from typing import Tuple, List
 import pandas
 import datetime
+from .utils import parse_movies_excel
 
 def get_db():
     if 'db' not in g:
@@ -71,6 +72,11 @@ class db:
             cursor = self._db.cursor()
             cursor.execute(INSERT_MOVIE_STATEMENT, sql_params)
             return cursor.lastrowid
+
+    def insert_movie_df_by_userid(self, movie_df:pandas.DataFrame, creator_id:int):
+        for _, row in movie_df.iterrows():
+            param_dict = {k:row[k] for k in movie_df.columns}
+            self.insert_movie_by_userid(**param_dict, creator_id=creator_id)
             
 
     def query_all_movies(self) -> List[Tuple]:
@@ -198,43 +204,11 @@ def init_db_command():
 @with_appcontext
 def import_movies(filename, creator_id):
     with current_app.open_resource(filename) as f:
-        # 必须列
-        required_col = ['movie_name', 'movie_runtime', 'movie_rating']
-        # 列范围（所有列）
-        col_scope = ['movie_name', 'movie_runtime', 'movie_rating', 'movie_likability', 'have_seen', 'origin']
-        excel = pandas.read_excel(f)
-        # 获取在列范围内的列
-        cols = [col for col in excel.columns if col in col_scope]
-        # 检查是否包含必须列
-        for col in required_col:
-            if col not in cols:
-                current_app.logger.error(f'there must be {col} column')
-                return
+        data = parse_movies_excel(f)
 
-        # 提取数据
-        data = excel.loc[:, cols]
         db = get_db()
-        # 清洗数据
-        def transform_runtime(movie_runtime: str):
-            if not movie_runtime.isdigit():
-                movie_runtime = movie_runtime.split('分钟')[0]
-                if movie_runtime.isdigit():
-                    return movie_runtime
-            else:
-                return movie_runtime
-
-            return 0
-
-        data['movie_runtime'] = data['movie_runtime'].apply(transform_runtime)
-        # 列排序
-        cols = required_col.copy()
-        cols.extend([i for i in cols if i not in required_col])
-
         # 插入数据库
-        for index, row in data.iterrows():
-            param_dict = {k:row[k] for k in cols}
-            param_dict['creator_id'] = creator_id
-            db.insert_movie_by_userid(**param_dict)
+        db.insert_movie_df_by_userid(data, creator_id)
 
         print(db.query_all_movies())
 

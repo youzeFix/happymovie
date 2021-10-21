@@ -5,7 +5,7 @@
         <el-button type="primary" icon="el-icon-edit-outline" @click="editMovieData()" :disabled='edit_disabled'>编辑</el-button>
         <el-button type="primary" icon="el-icon-plus" @click="addMovieData()">新增</el-button>
         <el-button type="danger" icon="el-icon-delete" @click="deleteMovieData()">删除</el-button>
-        <el-button @click="setCurrent()">取消选择</el-button>
+        <el-button type="success" icon="el-icon-upload2" @click="bulkImport()">批量导入</el-button>
     </div>
     
     <el-table
@@ -152,6 +152,39 @@
         <el-button type="primary" @click="addDialogOk()">确 定</el-button>
     </div>
     </el-dialog>
+
+    <!-- 批量导入对话框 -->
+    <el-dialog title="批量导入" :visible.sync="bulkImportDialogVisible">
+      <!-- <el-upload
+        class="upload-demo"
+        ref="upload"
+        action="https://jsonplaceholder.typicode.com/posts/"
+        :file-list="fileList"
+        :auto-upload="false">
+        <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+        <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+      </el-upload> -->
+      <el-upload
+        class="upload-demo"
+        ref="upload"
+        drag
+        action="/files/upload"
+        multiple
+        :auto-upload="false"
+        :file-list="fileList"
+        :on-success="fileUploadSuccess"
+        :on-error="fileUploadError"
+        accept=".xlsx">
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击选择</em></div>
+        <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+      </el-upload>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="bulkImportDialogOK()">上传</el-button>
+        <el-button @click="bulkImportDialogVisible = false">取 消</el-button>
+      </div>
+    </el-dialog>
     
     </div>
 </template>
@@ -183,7 +216,9 @@
           movie_name: [
             {required: true, message:'请输入电影名称', trigger: 'blur'}
           ]
-        }
+        },
+        bulkImportDialogVisible: false,
+        fileList: []
       }
     },
     computed: {
@@ -208,6 +243,24 @@
         if(!row){
             this.edit_disabled=true;
         }
+      },
+      bulkImport(){
+        this.bulkImportDialogVisible = true
+      },
+      submitUpload(){
+        console.log(this.fileList)
+      },
+      bulkImportDialogOK(){
+        console.log('start upload')
+        this.$refs.upload.submit()
+      },
+      fileUploadSuccess(response){
+        console.log('file upload success')
+        console.log(response)
+      },
+      fileUploadError(err){
+        console.log('file upload error')
+        console.log(err)
       },
       handleCurrentChange(val) {
         this.currentRow = val;
@@ -470,5 +523,9 @@
 .button-group {
     margin-top: 20px;
     margin-left: 5px;
+}
+.dialog-footer {
+  text-align: left;
+  padding-bottom: 10px;
 }
 </style>

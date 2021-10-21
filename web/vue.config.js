@@ -15,7 +15,11 @@ module.exports = {
           '/auth': {
             target: 'http://localhost:5000',
             changeOrigin: true
-        }
+          },
+          '/files': {
+            target: 'http://localhost:5000',
+            changeOrigin: true
+          }
       }
     }
 }

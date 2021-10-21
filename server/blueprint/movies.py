@@ -1,12 +1,12 @@
 from flask import Blueprint, g, request, current_app
 import json
 import logging
-from .utils import datetime_to_json
+from ..utils import datetime_to_json
 import datetime
-from .pick_algo import pick_movies_by_time
+from ..pick_algo import pick_movies_by_time
 from .auth import login_required
 
-from .db import get_db
+from ..db import get_db
 
 logger = logging.getLogger(__name__)
 bp = Blueprint('movies', __name__, url_prefix='/movie')

@@ -113,7 +113,7 @@
 
 
     <el-dialog title="新增电影" :visible.sync="dialogAddFormVisible">
-    <el-form :model="movie_form" :rules="add_dialog_rules" v-loading="dialogAddLoading">
+    <el-form :model="movie_form" :rules="add_dialog_rules" v-loading="dialogAddLoading" ref="movie_form">
         <el-form-item label="电影名称" prop='movie_name'>
         <el-input v-model="movie_form.movie_name" autocomplete="off"></el-input>
         </el-form-item>
@@ -441,6 +441,15 @@
         this.dialogAddFormVisible = true;
       },
       addDialogOk(){
+        let isValid = false;
+        this.$refs["movie_form"].validate((valid) => {
+          if(valid){
+            isValid = true
+          }else{
+            console.log('valid fail')
+          }
+        })
+        if(!isValid)return;
         let that = this;
         this.dialogAddLoading = true;
         this.$axios.post('/movie/', {

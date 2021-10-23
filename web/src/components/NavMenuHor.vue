@@ -117,6 +117,30 @@
         registerDialogLoading: false
       }
     },
+    created: function(){
+      console.log('get storage user info')
+      let userinfo = localStorage.getItem('userinfo')
+      if(userinfo != null){
+        userinfo = JSON.parse(userinfo)
+        let current_time = (new Date()).valueOf();
+        if(current_time - userinfo.time > 7*24*60*60*1000){
+          console.log('userinfo expired')
+          localStorage.removeItem('userinfo')
+          this.$message({
+            showClose: true,
+            message: '用户信息已过期，请重新登录',
+            type: 'error'
+          });
+        }else{
+          this.login(userinfo.username, userinfo.password)
+          this.$message({
+            showClose: true,
+            message: '自动登录',
+            type: 'success'
+          });
+        }
+      }
+    },
     computed: {
       loggedin(){
         return this.$store.state.logged
@@ -142,6 +166,7 @@
                   type: 'success'
                 });
                 that.$store.commit('logged_out')
+                localStorage.removeItem('userinfo')
               }else{
                 that.$message({
                   showClose: true,
@@ -174,12 +199,12 @@
             break;
         }
       },
-      loginDialogButtonOK(){
+      login(username, password){
         let that=this;
         this.loginDialogLoading = true;
         this.$axios({url: '/auth/login',
         method: 'post',
-        data: {username: this.loginForm.username, password: this.loginForm.password},
+        data: {username: username, password: password},
         transformRequest: [function (data) {
           // Do whatever you want to transform the data
           let ret = ''
@@ -206,6 +231,13 @@
               message: '登录成功。欢迎回来，'+that.userinfo.nickname+'!',
               type: 'success'
             });
+            if(that.keep_login){
+              if(localStorage.getItem('userinfo') == null){
+                console.log('save user info')
+                let timestamp = (new Date()).valueOf();
+                localStorage.setItem('userinfo', JSON.stringify({username:username, password:password, time:timestamp}))
+              }
+            }
           }else if(response.data['statusCode'] == -1){
             that.$message({
               showClose: true,
@@ -222,6 +254,9 @@
           that.loginDialogLoading = false;
           that.dialogLoginVisible = false;
         })
+      },
+      loginDialogButtonOK(){
+        this.login(this.loginForm.username, this.loginForm.password)
       },
       registerDialogButtonOK(){
         let that=this;

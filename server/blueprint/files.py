@@ -3,6 +3,7 @@ import logging
 from .auth import login_required
 from ..utils import parse_movies_excel
 from ..db import get_db
+import pathlib
 
 logger = logging.getLogger(__name__)
 bp = Blueprint('files', __name__, url_prefix='/files')
@@ -40,4 +41,7 @@ def upload_file():
 
 @bp.route('/download/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(current_app.config['DOWNLOAD_FOLDER'], filename)
+    logger.info('download file')
+    download_dir_absolute = pathlib.Path(current_app.config['DOWNLOAD_FOLDER']).absolute()
+    # print('download folder is', download_dir_absolute)
+    return send_from_directory(download_dir_absolute, filename)

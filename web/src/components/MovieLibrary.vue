@@ -165,6 +165,7 @@
         <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
         <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
       </el-upload> -->
+      
       <el-upload
         class="upload-demo"
         ref="upload"
@@ -181,6 +182,7 @@
         <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
       </el-upload>
       <div slot="footer" class="dialog-footer">
+        <el-button type="success" @click="download_movies_template()">下载模板</el-button>
         <el-button type="primary" @click="bulkImportDialogOK()">上传</el-button>
         <el-button @click="bulkImportDialogVisible = false">取 消</el-button>
       </div>
@@ -238,6 +240,11 @@
     },
 
     methods: {
+      download_movies_template(){
+        let fileUrl = '/files/download/movies-template.xlsx'
+        window.open(fileUrl)
+        // window.location.href = fileUrl
+      },
       setCurrent(row) {
         this.$refs.singleTable.setCurrentRow(row);
         if(!row){
@@ -257,10 +264,21 @@
       fileUploadSuccess(response){
         console.log('file upload success')
         console.log(response)
+        this.$message({
+          showClose: true,
+          message: '导入成功',
+          type: 'success'
+        });
+        this.loadMovieData()
       },
       fileUploadError(err){
         console.log('file upload error')
         console.log(err)
+        this.$message({
+          showClose: true,
+          message: '导入失败',
+          type: 'error'
+        });
       },
       handleCurrentChange(val) {
         this.currentRow = val;

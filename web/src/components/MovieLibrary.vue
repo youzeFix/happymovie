@@ -10,7 +10,7 @@
     
     <el-table
         ref="singleTable"
-        :data="tableData"
+        :data="currentPageTableData"
         highlight-current-row
         @current-change="handleCurrentChange"
         style="width: 100%"
@@ -18,7 +18,8 @@
         
         <el-table-column
         type="index"
-        width="50">
+        width="50"
+        :index="tableIndexMethod">
         </el-table-column>
 
         <el-table-column
@@ -68,6 +69,17 @@
         >
         </el-table-column>
     </el-table>
+
+    <div class="el-pagination">
+      <el-pagination
+        background
+        :hide-on-single-page="true"
+        layout="prev, pager, next"
+        :page-size="pageSize"
+        :total="tableData.length"
+        @current-change="handleCurrentPageChange">
+      </el-pagination>
+    </div>
 
     <!-- Form -->
     <el-dialog title="编辑电影" :visible.sync="dialogEditFormVisible">
@@ -154,18 +166,7 @@
     </el-dialog>
 
     <!-- 批量导入对话框 -->
-    <el-dialog title="批量导入" :visible.sync="bulkImportDialogVisible">
-      <!-- <el-upload
-        class="upload-demo"
-        ref="upload"
-        action="https://jsonplaceholder.typicode.com/posts/"
-        :file-list="fileList"
-        :auto-upload="false">
-        <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-        <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-      </el-upload> -->
-      
+    <el-dialog class="dialog-batch-import" title="批量导入" :visible.sync="bulkImportDialogVisible">
       <el-upload
         class="upload-demo"
         ref="upload"
@@ -197,6 +198,7 @@
     data() {
       return {
         tableData: [],
+        currentPageTableData: [],
         currentRow: null,
         loading: false,
         edit_disabled: true,
@@ -220,7 +222,9 @@
           ]
         },
         bulkImportDialogVisible: false,
-        fileList: []
+        fileList: [],
+        currentPage: 1,
+        pageSize: 11
       }
     },
     computed: {
@@ -235,11 +239,24 @@
           this.loadMovieData()
         }else{
           this.tableData = []
+          this.currentPageTableData = []
         }
       }
     },
 
     methods: {
+      tableIndexMethod(index){
+        return this.pageSize*(this.currentPage-1)+1+index
+      },
+      updateCurrentPageTableData(){
+        let startIndex = (this.currentPage-1)*this.pageSize + 1
+        this.currentPageTableData = this.tableData.slice(startIndex, startIndex+this.pageSize)
+      },
+      handleCurrentPageChange(newPage){
+        this.currentPage = newPage
+        console.log('current page is '+newPage)
+        this.updateCurrentPageTableData()
+      },
       download_movies_template(){
         let fileUrl = '/files/download/movies-template.xlsx'
         window.open(fileUrl)
@@ -301,6 +318,7 @@
           let statusCode = response.data['statusCode']
           if(statusCode == 0){
             that.tableData = response.data['data'];
+            that.updateCurrentPageTableData()
           }else if(statusCode == -1){
             that.$message({
               showClose: true,
@@ -476,6 +494,7 @@
               message: '新增成功',
               type: 'success'
             })
+            that.updateCurrentPageTableData()
           }
           
         })
@@ -527,6 +546,7 @@
               message: '删除成功',
               type: 'success'
             })
+            that.updateCurrentPageTableData()
           }else if(statusCode == -1){
             that.$message({
               showClose: true,
@@ -552,7 +572,16 @@
     margin-left: 5px;
 }
 .dialog-footer {
-  text-align: left;
+  text-align: center;
   padding-bottom: 10px;
+}
+.el-pagination {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.dialog-batch-import {
+  text-align: center;
+  /* width: 50%; */
 }
 </style>

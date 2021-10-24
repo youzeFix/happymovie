@@ -69,15 +69,15 @@
   </el-dialog>
 
   <el-dialog title="注册" :visible.sync="dialogRegisterVisible">
-  <el-form :model="registerForm" v-loading="registerDialogLoading">
-    <el-form-item label="昵称">
-      <el-input v-model="registerForm.nickname" ></el-input>
+  <el-form :model="registerForm" status-icon ref="registerForm" :rules="registerRules" v-loading="registerDialogLoading">
+    <el-form-item label="昵称" prop="nickname">
+      <el-input v-model="registerForm.nickname" maxlength=10></el-input>
     </el-form-item>
-    <el-form-item label="用户名">
-      <el-input v-model="registerForm.username" ></el-input>
+    <el-form-item label="用户名" prop="username">
+      <el-input v-model="registerForm.username" maxlength=16></el-input>
     </el-form-item>
-    <el-form-item label="密码">
-      <el-input v-model="registerForm.password" show-password></el-input>
+    <el-form-item label="密码" prop="password">
+      <el-input v-model="registerForm.password" show-password maxlength=16></el-input>
     </el-form-item>
   </el-form>
   <div slot="footer" class="dialog-footer">
@@ -94,6 +94,41 @@
 <script>
   export default {
     data(){
+      var validateNickname = (rule, value, callback) => {
+        if (!value) {
+          return callback(new Error('年龄不能为空'));
+        }
+        setTimeout(() => {
+          if (!Number.isInteger(value)) {
+            callback(new Error('请输入数字值'));
+          } else {
+            if (value < 18) {
+              callback(new Error('必须年满18岁'));
+            } else {
+              callback();
+            }
+          }
+        }, 1000);
+      };
+      var validateUsername = (rule, value, callback) => {
+        if (!value) {
+          return callback(new Error('年龄不能为空'));
+        }
+        setTimeout(() => {
+          if (!Number.isInteger(value)) {
+            callback(new Error('请输入数字值'));
+          } else {
+            if (value < 18) {
+              callback(new Error('必须年满18岁'));
+            } else {
+              callback();
+            }
+          }
+        }, 1000);
+      };
+      var validatePassword = (rule, value, callback) => {
+        callback();
+      };
       return {
         userinfo: {
           userid:0,
@@ -114,7 +149,18 @@
         dialogRegisterVisible: false,
         keep_login: false,
         loginDialogLoading: false,
-        registerDialogLoading: false
+        registerDialogLoading: false,
+        registerRules: {
+          nickname: [
+            { validator: validateNickname, trigger: 'blur' }
+          ],
+          username: [
+            { required: true, validator: validateUsername, trigger: 'blur' }
+          ],
+          password: [
+            { required: true, validator: validatePassword, trigger: 'blur' }
+          ]
+        }
       }
     },
     created: function(){
@@ -259,6 +305,15 @@
         this.login(this.loginForm.username, this.loginForm.password)
       },
       registerDialogButtonOK(){
+        let isValid = false
+        this.$refs['registerForm'].validate((valid) => {
+          if(valid){
+            isValid = true
+          }else{
+            console.log('valid fail')
+          }
+        })
+        if(!isValid)return;
         let that=this;
         this.registerDialogLoading = true;
         this.$axios({url: '/auth/register',

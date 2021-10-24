@@ -34,8 +34,9 @@ def parse_movies_excel(f) -> pandas.DataFrame:
             return movie_runtime
 
         return 0
+    # print(data)
 
-    data['movie_runtime'] = data['movie_runtime'].apply(transform_runtime)
+    # data['movie_runtime'] = data['movie_runtime'].apply(transform_runtime)
     return data
 
 

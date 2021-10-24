@@ -547,6 +547,9 @@
               type: 'success'
             })
             that.updateCurrentPageTableData()
+            if(that.currentPageTableData.length > 0){
+              that.setCurrent(that.currentPageTableData[0])
+            }
           }else if(statusCode == -1){
             that.$message({
               showClose: true,

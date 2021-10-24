@@ -113,7 +113,7 @@ class db:
         SELECT * FROM movies WHERE have_seen=0 AND creator_id=?
         '''
         res = []
-        for row in self._db.execute(STATEMENT, (user_id)):
+        for row in self._db.execute(STATEMENT, (user_id,)):
             res.append(tuple(row))
         return res
 

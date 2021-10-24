@@ -53,12 +53,12 @@
   </div>
 
   <el-dialog title="登录" :visible.sync="dialogLoginVisible">
-  <el-form :model="loginForm" v-loading="loginDialogLoading">
-    <el-form-item label="用户名">
-      <el-input v-model="loginForm.username" ></el-input>
+  <el-form :model="loginForm" status-icon ref="loginForm" :rules="loginRules" v-loading="loginDialogLoading">
+    <el-form-item label="用户名" prop="username">
+      <el-input v-model="loginForm.username" placeholder="请输入6-16位字母或数字"></el-input>
     </el-form-item>
-    <el-form-item label="密码">
-      <el-input v-model="loginForm.password" show-password></el-input>
+    <el-form-item label="密码" prop="password">
+      <el-input v-model="loginForm.password" show-password placeholder="请输入6-16位字母或数字"></el-input>
     </el-form-item>
     <el-checkbox v-model="keep_login">保持登录</el-checkbox>
   </el-form>
@@ -74,10 +74,10 @@
       <el-input v-model="registerForm.nickname" maxlength=10></el-input>
     </el-form-item>
     <el-form-item label="用户名" prop="username">
-      <el-input v-model="registerForm.username" maxlength=16></el-input>
+      <el-input v-model="registerForm.username" maxlength=16 placeholder="请输入6-16位字母或数字"></el-input>
     </el-form-item>
     <el-form-item label="密码" prop="password">
-      <el-input v-model="registerForm.password" show-password maxlength=16></el-input>
+      <el-input v-model="registerForm.password" show-password maxlength=16 placeholder="请输入6-16位字母或数字"></el-input>
     </el-form-item>
   </el-form>
   <div slot="footer" class="dialog-footer">
@@ -95,39 +95,40 @@
   export default {
     data(){
       var validateNickname = (rule, value, callback) => {
-        if (!value) {
-          return callback(new Error('年龄不能为空'));
-        }
-        setTimeout(() => {
-          if (!Number.isInteger(value)) {
-            callback(new Error('请输入数字值'));
-          } else {
-            if (value < 18) {
-              callback(new Error('必须年满18岁'));
-            } else {
-              callback();
-            }
-          }
-        }, 1000);
+        callback();
       };
       var validateUsername = (rule, value, callback) => {
         if (!value) {
-          return callback(new Error('年龄不能为空'));
+          return callback(new Error('用户名不能为空'));
         }
-        setTimeout(() => {
-          if (!Number.isInteger(value)) {
-            callback(new Error('请输入数字值'));
-          } else {
-            if (value < 18) {
-              callback(new Error('必须年满18岁'));
-            } else {
-              callback();
-            }
-          }
-        }, 1000);
+        let p = /^\w\w{5,15}$/;
+        let r = p.test(value);//校验
+        if(!r){
+          callback(new Error('请输入6-16位字母或数字'));
+        }else{
+          callback();
+        }
+        // setTimeout(() => {
+        //   let p = /^\w\w{5,15}$/;
+        //   let r = p.test(value);//校验
+        //   if(!r){
+        //     callback(new Error('请输入6-16位字母或数字'));
+        //   }else{
+        //     callback();
+        //   }
+        // }, 1000);
       };
       var validatePassword = (rule, value, callback) => {
-        callback();
+        if (!value) {
+          return callback(new Error('密码不能为空'));
+        }
+        let p = /^\w\w{5,15}$/;
+        let r = p.test(value);//校验
+        if(!r){
+          callback(new Error('请输入6-16位字母或数字'));
+        }else{
+          callback();
+        }
       };
       return {
         userinfo: {
@@ -154,6 +155,14 @@
           nickname: [
             { validator: validateNickname, trigger: 'blur' }
           ],
+          username: [
+            { required: true, validator: validateUsername, trigger: 'blur' }
+          ],
+          password: [
+            { required: true, validator: validatePassword, trigger: 'blur' }
+          ]
+        },
+        loginRules: {
           username: [
             { required: true, validator: validateUsername, trigger: 'blur' }
           ],
@@ -302,6 +311,15 @@
         })
       },
       loginDialogButtonOK(){
+        let isValid = false
+        this.$refs['loginForm'].validate((valid) => {
+          if(valid){
+            isValid = true
+          }else{
+            console.log('valid fail')
+          }
+        })
+        if(!isValid)return;
         this.login(this.loginForm.username, this.loginForm.password)
       },
       registerDialogButtonOK(){

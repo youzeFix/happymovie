@@ -1,5 +1,5 @@
 import unittest
-from server.crawler import get_douban_top250, get_proxy
+from server.crawler import get_douban_top250, get_proxy, parse_favorite_movie
 import requests
 import warnings
 
@@ -38,3 +38,7 @@ class TestCrawlerMethods(unittest.TestCase):
                 print(e)
                 max_retries+=1
                 print('retry', max_retries)
+
+
+    def test_parse_favorite_movie(self):
+        parse_favorite_movie()

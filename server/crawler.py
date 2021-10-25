@@ -6,6 +6,8 @@ import numpy as np
 import random
 import time
 import logging
+import json
+import pathlib
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', 
                     level=logging.INFO, filename='douban.log', encoding='utf-8')
@@ -91,6 +93,33 @@ def get_douban_top250():
 
     df = pandas.DataFrame(np.array(movie_list), columns=('movie_name', 'rating', 'movie_runtime'))
     return df
+
+
+def parse_favorite_movie():
+    
+    file_num = 0
+    current_file = pathlib.Path(f'instance/favorite_movie_page{str(file_num)}.json')
+    categories = []
+    titles = []
+    while current_file.exists():
+        with open(current_file, 'r', encoding='utf-8') as f:
+            obj = json.loads(f.read())
+            items = obj['data']['model']['items']
+            
+            for i in items:
+                category = i.get('category')
+                title = i.get('title')
+                print(f'category:{category}, title:{title}')
+                categories.append(category)
+                titles.append(title)
+        file_num += 1
+        current_file = pathlib.Path(f'instance/favorite_movie_page{str(file_num)}.json')
+
+
+    df = pandas.DataFrame({'category': categories, 'title': titles})
+    df.to_excel('favorite_movies.xlsx')
+
+
 
 if __name__ == "__main__":
     logging.info('start crawl')

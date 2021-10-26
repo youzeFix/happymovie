@@ -1,5 +1,5 @@
 import unittest
-from server.crawler import get_douban_top250, get_proxy, parse_favorite_movie
+from server.crawler import get_douban_top250, get_proxy, parse_favorite_movie, search_douban_movie
 import requests
 import warnings
 
@@ -42,3 +42,6 @@ class TestCrawlerMethods(unittest.TestCase):
 
     def test_parse_favorite_movie(self):
         parse_favorite_movie()
+
+    def test_search_douban_movie(self):
+        search_douban_movie('绿皮书')

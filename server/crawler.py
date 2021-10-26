@@ -119,7 +119,18 @@ def parse_favorite_movie():
     df = pandas.DataFrame({'category': categories, 'title': titles})
     df.to_excel('favorite_movies.xlsx')
 
-
+def search_douban_movie(movie_name:str):
+    headers = {
+        "Accept-Encoding": "gzip, deflate",
+        "Referer": "https://movie.douban.com/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0"
+    }
+    url = 'https://movie.douban.com/j/subject_suggest'
+    # url = 'http://httpbin.org/get'
+    params = {'q': movie_name}
+    res = requests.get(url, params=params, headers=headers, verify=False)
+    res = res.json()
+    print(res)
 
 if __name__ == "__main__":
     logging.info('start crawl')

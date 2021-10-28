@@ -8,6 +8,8 @@ import time
 import logging
 import json
 import pathlib
+from typing import List, Dict
+from urllib.parse import urlparse, urlunparse
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', 
                     level=logging.INFO, filename='douban.log', encoding='utf-8')
@@ -18,7 +20,7 @@ headers = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
     "Accept-Encoding": "gzip, deflate",
     "Accept-Language": "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2",
-    "Referer": "https://movie.douban.com/top250",
+    "Referer": "https://movie.douban.com/",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0"
 }
 
@@ -119,6 +121,13 @@ def parse_favorite_movie():
     df = pandas.DataFrame({'category': categories, 'title': titles})
     df.to_excel('favorite_movies.xlsx')
 
+def parse_detail_page(page_text:str) -> Dict:
+    '''
+    param page_text: 详情页面源码
+    return : 一个包含电影详情各个字段的dict
+    '''
+    pass
+
 def search_douban_movie(movie_name:str):
     headers = {
         "Accept-Encoding": "gzip, deflate",
@@ -131,6 +140,23 @@ def search_douban_movie(movie_name:str):
     res = requests.get(url, params=params, headers=headers, verify=False)
     res = res.json()
     print(res)
+    detail_url = None
+    if len(res) > 0:
+        detail_url = res[0]['url']
+    parse_result = urlparse(detail_url)
+    detail_url = urlunparse(parse_result._replace(query=''))
+    return detail_url
+
+def get_movies_info(movies_name:List[str]) -> pandas.DataFrame:
+    '''
+    param movies_name: movie name list
+    return : dataframe
+    '''
+    for m in movies_name:
+        detail_url = search_douban_movie(m)
+
+
+
 
 if __name__ == "__main__":
     logging.info('start crawl')

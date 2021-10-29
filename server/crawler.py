@@ -8,8 +8,10 @@ import time
 import logging
 import json
 import pathlib
-from typing import List, Dict
+from typing import List, Dict, NamedTuple
 from urllib.parse import urlparse, urlunparse
+import dataclasses
+from datetime import date
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', 
                     level=logging.INFO, filename='douban.log', encoding='utf-8')
@@ -120,6 +122,27 @@ def parse_favorite_movie():
 
     df = pandas.DataFrame({'category': categories, 'title': titles})
     df.to_excel('favorite_movies.xlsx')
+
+class ReleaseDate(NamedTuple):
+    region: str
+    release_date: date
+class RunningTime(NamedTuple):
+    version: str
+    running_time: int
+
+
+@dataclasses
+class Movie:
+    movie_name: str
+    director: List[str]
+    scriptwriter: List[str]
+    starring: List[str]
+    category: List[str]
+    region: str
+    language: List[str]
+    release_date: List[ReleaseDate]
+    running_time: List[RunningTime]
+
 
 def parse_detail_page(page_text:str) -> Dict:
     '''

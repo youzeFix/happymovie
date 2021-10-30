@@ -1,5 +1,7 @@
 import unittest
-from server.crawler import get_douban_top250, get_proxy, parse_favorite_movie, search_douban_movie
+
+import pandas
+from server.crawler import get_douban_top250, get_proxy, parse_favorite_movie, search_douban_movie_url, parse_detail_page, get_page_text, get_movies_info
 import requests
 import warnings
 
@@ -44,4 +46,25 @@ class TestCrawlerMethods(unittest.TestCase):
         parse_favorite_movie()
 
     def test_search_douban_movie(self):
-        search_douban_movie('绿皮书')
+        search_douban_movie_url('绿皮书')
+
+    def test_parse_detail_page(self):
+        # url = 'https://movie.douban.com/subject/1307914/'
+        # page_text = get_page_text(url)
+        # with open('detail_page_demo.html', 'w', encoding='utf-8') as f:
+        #     f.write(page_text)
+        page_text = open('detail_page_demo.html', 'r', encoding='utf-8').read()
+        movie = parse_detail_page(page_text)
+        print(movie)
+
+    def test_get_movies_info(self):
+        movie_name = ['无间道', '绿皮书', '泰坦尼克号', '倩女幽魂']
+        df = get_movies_info(movie_name)
+        print(df)
+        df.to_excel('test_auto_movie.xlsx')
+
+    def test_crawl(self):
+        df = pandas.read_excel('favorite_movies.xlsx', 'Sheet2')
+        movies_name = list(df['movie_name'])
+        df = get_movies_info(movies_name)
+        df.to_excel('favorite_movie_auto_populate.xlsx')

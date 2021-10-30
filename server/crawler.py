@@ -10,8 +10,9 @@ import json
 import pathlib
 from typing import List, Dict, NamedTuple
 from urllib.parse import urlparse, urlunparse
-import dataclasses
+from dataclasses import dataclass
 from datetime import date
+import re
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', 
                     level=logging.INFO, filename='douban.log', encoding='utf-8')
@@ -124,24 +125,53 @@ def parse_favorite_movie():
     df.to_excel('favorite_movies.xlsx')
 
 class ReleaseDate(NamedTuple):
+    '''
+    上映时间
+    '''
+    # 地区
     region: str
+    # 上映时间
     release_date: date
+
 class RunningTime(NamedTuple):
+    '''
+    片长
+    '''
+    # 版本
     version: str
+    # 时长（分钟数）
     running_time: int
 
 
-@dataclasses
+@dataclass
 class Movie:
+    '''
+    豆瓣电影实体类
+    '''
+    # 电影名称
     movie_name: str
+    # 导演
     director: List[str]
+    # 编剧
     scriptwriter: List[str]
+    # 主演
     starring: List[str]
+    # 类型
     category: List[str]
+    # 地区
     region: str
+    # 语言
     language: List[str]
+    # 上映日期
     release_date: List[ReleaseDate]
+    # 片长
     running_time: List[RunningTime]
+    # 又名
+    alternate_name: List[str]
+    # imdb
+    imdb: str
+    # 电影评分
+    rating_num: float
 
 
 def parse_detail_page(page_text:str) -> Dict:
@@ -149,36 +179,97 @@ def parse_detail_page(page_text:str) -> Dict:
     param page_text: 详情页面源码
     return : 一个包含电影详情各个字段的dict
     '''
-    pass
+    detail_page = etree.HTML(page_text)
+    movie_name = detail_page.xpath(r'//span[@property="v:itemreviewed"]/text()')[0].strip()
+    rating_num = detail_page.xpath(r'//strong[@property="v:average"]/text()')[0].strip()
+    info_div = detail_page.xpath(r'//div[@id="info"]')[0]
+    # print(len(info_div))
+    origin = etree.tounicode(info_div)
+    origin = origin.replace('\n', '')
+    origin = origin.replace(' ', '')
+    # print(origin)
+    origin_list = origin.split('<br/>')
+    parse_list = []
+    for o in origin_list:
+        s = etree.HTML(o)
+        if s is not None:
+            parse_list.append(''.join(s.xpath('//text()')))
+    director = parse_list[0].split(':')[1].split('/')
+    scriptwriter = parse_list[1].split(':')[1].split('/')
+    starring = parse_list[2].split(':')[1].split('/')
+    category = parse_list[3].split(':')[1].split('/')
+    region = parse_list[4].split(':')[1].split('/')
+    language = parse_list[5].split(':')[1].split('/')
+    temp_release_date = parse_list[6].split(':')[1].split('/')
+    release_date = []
+    for e in temp_release_date:
+        match_res = re.match('^(.+)\((.+)\)', e)
+        if match_res is not None:
+            release_date.append(ReleaseDate(match_res.group(2), match_res.group(1)))
 
-def search_douban_movie(movie_name:str):
+    temp_running_time = parse_list[7].split(':')[1].split('/')
+    running_time = []
+    for e in temp_running_time:
+        match_res = re.match('^(.+)\((.+)\)', e)
+        if match_res is not None:
+            run_time = match_res.group(1).split('分钟')[0]
+            running_time.append(RunningTime(match_res.group(2), run_time))
+        else:
+            run_time = e.split('分钟')[0]
+            running_time.append(RunningTime(None, run_time))
+    
+    alternate_name = parse_list[8].split(':')[1].split('/')
+    imdb = parse_list[9].split(':')[1]
+
+    movie = Movie(movie_name, director, scriptwriter, starring, category, region, language, release_date, running_time, alternate_name, imdb, rating_num)
+    return movie
+
+def search_douban_movie_url(movie_name:str) -> str:
+    '''
+    根据电影名称获取电影详情页的url
+    '''
     headers = {
         "Accept-Encoding": "gzip, deflate",
         "Referer": "https://movie.douban.com/",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0"
     }
     url = 'https://movie.douban.com/j/subject_suggest'
-    # url = 'http://httpbin.org/get'
     params = {'q': movie_name}
     res = requests.get(url, params=params, headers=headers, verify=False)
     res = res.json()
-    print(res)
+    # print(res)
     detail_url = None
     if len(res) > 0:
         detail_url = res[0]['url']
-    parse_result = urlparse(detail_url)
-    detail_url = urlunparse(parse_result._replace(query=''))
+        parse_result = urlparse(detail_url)
+        detail_url = urlunparse(parse_result._replace(query=''))
     return detail_url
 
 def get_movies_info(movies_name:List[str]) -> pandas.DataFrame:
     '''
-    param movies_name: movie name list
-    return : dataframe
+    根据电影名称抓取电影信息
+    param movies_name: 电影名称列表
+    return : 包含电影名称、导演、编剧、主演、类型、制片国家/地区、语言、上映日期、片长、又名和imdb列的dataframe
     '''
+    movies = []
     for m in movies_name:
-        detail_url = search_douban_movie(m)
+        time.sleep(random.randint(5,10))
+        try:
+            detail_url = search_douban_movie_url(m)
+            if detail_url is None:
+                print(f'movie {m} get no url')
+                continue
+            page_text = get_page_text(detail_url)
+            movie = parse_detail_page(page_text)
+            print(f'get {m} info success')
+            print(movie)
+            movies.append(movie)
+        except Exception as e:
+            print(e)
+            print('exception occoured while scratch movie ' + m)
 
-
+    df = pandas.DataFrame(movies)
+    return df
 
 
 if __name__ == "__main__":

@@ -219,7 +219,9 @@ def parse_detail_page(page_text:str) -> Dict:
             running_time.append(RunningTime(None, run_time))
     
     alternate_name = parse_list[8].split(':')[1].split('/')
-    imdb = parse_list[9].split(':')[1]
+    imdb = ''
+    if len(parse_list) > 9:
+        imdb = parse_list[9].split(':')[1]
 
     movie = Movie(movie_name, director, scriptwriter, starring, category, region, language, release_date, running_time, alternate_name, imdb, rating_num)
     return movie
@@ -252,8 +254,10 @@ def get_movies_info(movies_name:List[str]) -> pandas.DataFrame:
     return : 包含电影名称、导演、编剧、主演、类型、制片国家/地区、语言、上映日期、片长、又名和imdb列的dataframe
     '''
     movies = []
-    for m in movies_name:
+    total = len(movies_name)
+    for index, m in enumerate(movies_name):
         time.sleep(random.randint(5,10))
+        print(f'start {index+1}/{total}')
         try:
             detail_url = search_douban_movie_url(m)
             if detail_url is None:
@@ -271,9 +275,14 @@ def get_movies_info(movies_name:List[str]) -> pandas.DataFrame:
     df = pandas.DataFrame(movies)
     return df
 
+def parse_excel() -> pandas.DataFrame:
+    df = pandas.read_excel('favorite_movie_auto_populate.xlsx')
+    print(df['running_time'])
 
-if __name__ == "__main__":
-    logging.info('start crawl')
-    df = get_douban_top250()
+
+if __name__ == '__main__':
+    url = 'https://movie.douban.com/subject/26871906/'
+    page_text = get_page_text(url)
+    movie = parse_detail_page(page_text)
+    df = pandas.DataFrame([movie])
     print(df)
-    df.to_excel('starton200.xlsx')

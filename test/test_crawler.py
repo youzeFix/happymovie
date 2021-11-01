@@ -77,7 +77,7 @@ class TestCrawlerMethods(unittest.TestCase):
         df.to_excel('test_auto_movie.xlsx')
 
     def test_get_movies_brief_info(self):
-        movie_name = ['怒火·重案', '鼠胆龙威', '有客到']
+        movie_name = ['百万杀人游戏']
         df = get_movies_brief_info(movie_name)
         print(df)
 

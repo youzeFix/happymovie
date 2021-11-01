@@ -53,15 +53,14 @@ def get_maximized_pleasure(time_have: int, movies_origin: List[Movie]) -> List[M
     return res
 
 
-def pick_movies_by_time(time_have:int, movies:List[Tuple]) -> List[Tuple]:
+def pick_movies_by_time(time_have:int, movies:List) -> List:
     movies_input = []
     movies_map = {}
     for m in movies:
         # index, movie_runtime, movie_name, movie_rating*movie_likability
-        movies_input.append(Movie(m[0], m[2], m[1], -m[3]*m[4]))
-        movies_map[m[0]] = m
+        movies_input.append(Movie(m['id'], m['movie_runtime'], m['movie_name'], -m['movie_rating']*m['movie_likability']))
+        movies_map[m['id']] = m
     pick_output = get_maximized_pleasure(time_have, movies_input)
-
     res = []
     for m in pick_output:
         res.append(movies_map[m.movie_id])

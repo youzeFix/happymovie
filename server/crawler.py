@@ -290,8 +290,16 @@ def search_douban_movie_url(movie_name:str) -> str:
         res = res.json()
         # print(res)
         detail_url = None
+        num = 0
         if len(res) > 0:
-            detail_url = res[0]['url']
+            while res[num]['episode'] != "":
+                if num >= len(res):
+                    num += 1
+                    break
+                num += 1
+            if num > len(res):
+                return detail_url
+            detail_url = res[num]['url']
             parse_result = urlparse(detail_url)
             detail_url = urlunparse(parse_result._replace(query=''))
         else:

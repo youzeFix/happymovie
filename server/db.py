@@ -12,7 +12,7 @@ from .utils import parse_movies_excel
 
 def get_db():
     if 'db' not in g:
-        g.db = db()
+        g.db = DB()
 
     return g.db
 
@@ -28,7 +28,7 @@ def init_db():
     with current_app.open_resource('schema.sql') as f:
         db._db.executescript(f.read().decode('utf8'))
 
-class db:
+class DB:
 
     def __init__(self) -> None:
         self._db = sqlite3.connect(
@@ -114,7 +114,7 @@ class db:
         '''
         res = []
         for row in self._db.execute(STATEMENT, (user_id,)):
-            res.append(tuple(row))
+            res.append(row)
         return res
 
 

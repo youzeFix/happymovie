@@ -174,7 +174,7 @@ class Movie:
     rating_num: float
 
 
-def parse_detail_page(page_text:str) -> Dict:
+def parse_detail_page(page_text:str) -> Movie:
     '''
     param page_text: 详情页面源码
     return : 一个包含电影详情各个字段的dict
@@ -226,6 +226,30 @@ def parse_detail_page(page_text:str) -> Dict:
     movie = Movie(movie_name, director, scriptwriter, starring, category, region, language, release_date, running_time, alternate_name, imdb, rating_num)
     return movie
 
+def parse_detail_page_runtime_and_rating(page_text:str) -> Dict:
+    '''
+    只解析详情页的电影市场和评分
+    '''
+    detail_page = etree.HTML(page_text)
+    movie_name = detail_page.xpath(r'//span[@property="v:itemreviewed"]/text()')[0].strip()
+    rating_num = detail_page.xpath(r'//strong[@property="v:average"]/text()')[0].strip()
+    movie_runtime = detail_page.xpath(r'//span[@property="v:runtime"]/text()')[0].strip()
+    temp_running_time = movie_runtime.split('/')
+    running_time = []
+    for e in temp_running_time:
+        match_res = re.match('^(.+)\((.+)\)', e)
+        if match_res is not None:
+            run_time = match_res.group(1).split('分钟')[0]
+            running_time.append(RunningTime(match_res.group(2), run_time))
+        else:
+            run_time = e.split('分钟')[0]
+            running_time.append(RunningTime(None, run_time))
+    if len(running_time) <= 0:
+        logging.error('parse running time fail')
+        return {}
+    return {'movie_name': movie_name, 'running_time':running_time[0].running_time, 'rating_num':rating_num}
+
+
 def search_douban_movie_url(movie_name:str) -> str:
     '''
     根据电影名称获取电影详情页的url
@@ -237,15 +261,42 @@ def search_douban_movie_url(movie_name:str) -> str:
     }
     url = 'https://movie.douban.com/j/subject_suggest'
     params = {'q': movie_name}
-    res = requests.get(url, params=params, headers=headers, verify=False)
-    res = res.json()
-    # print(res)
-    detail_url = None
-    if len(res) > 0:
-        detail_url = res[0]['url']
-        parse_result = urlparse(detail_url)
-        detail_url = urlunparse(parse_result._replace(query=''))
-    return detail_url
+
+    if PROXY_ENABLE:
+        max_retries = 0
+        while max_retries < 10:
+            try:
+                proxy = get_proxy()
+                proxies = {
+                    'http': 'http://' + proxy,
+                    'https': 'https://' + proxy
+                }
+                print(proxies)
+                res = requests.get(url, params=params, headers=headers, verify=False, timeout=10)
+                res = res.json()
+                detail_url = None
+                if len(res) > 0:
+                    detail_url = res[0]['url']
+                    parse_result = urlparse(detail_url)
+                    detail_url = urlunparse(parse_result._replace(query=''))
+                else:
+                    print('search url res:', res)
+                return detail_url
+            except Exception:
+                max_retries+=1
+                print('retry', max_retries)
+    else:
+        res = requests.get(url, params=params, headers=headers, verify=False, timeout=10)
+        res = res.json()
+        # print(res)
+        detail_url = None
+        if len(res) > 0:
+            detail_url = res[0]['url']
+            parse_result = urlparse(detail_url)
+            detail_url = urlunparse(parse_result._replace(query=''))
+        else:
+            print('search url res:', res)
+        return detail_url
 
 def get_movies_info(movies_name:List[str]) -> pandas.DataFrame:
     '''
@@ -272,6 +323,42 @@ def get_movies_info(movies_name:List[str]) -> pandas.DataFrame:
             print(e)
             print('exception occoured while scratch movie ' + m)
 
+    df = pandas.DataFrame(movies)
+    return df
+
+def get_movies_brief_info(movies_name:List[str]) -> pandas.DataFrame:
+    '''
+    根据电影名称抓取电影简要信息
+    param movies_name: 电影名称列表
+    return : 包含电影名称、片长和评分的dataframe
+    '''
+    movies = []
+    total = len(movies_name)
+    fail_list = []
+    for index, m in enumerate(movies_name):
+        time.sleep(random.randint(5,10))
+        print(f'start {index+1}/{total}')
+        try:
+            detail_url = search_douban_movie_url(m)
+            if detail_url is None:
+                print(f'movie {m} get no url')
+                fail_list.append(m)
+                continue
+            time.sleep(random.randint(5,10))
+            page_text = get_page_text(detail_url)
+            movie = parse_detail_page_runtime_and_rating(page_text)
+            if len(movie) > 0:
+                print(f'get {m} info success')
+                print(movie)
+            else:
+                logging.error(f'get {m} fail')
+                continue
+            movies.append(movie)
+        except Exception as e:
+            print(e)
+            print('exception occoured while scratch movie ' + m)
+
+    print('fail list:', fail_list)
     df = pandas.DataFrame(movies)
     return df
 

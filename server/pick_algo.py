@@ -23,7 +23,6 @@ def get_maximized_pleasure(time_have: int, movies_origin: List[Movie]) -> List[M
     curr = 0
     movies.sort(key=lambda x:x.movie_length)
     res = []
-    movies_length = [m.movie_length for m in movies]
     
     pq = []
     time_spend = 0
@@ -39,15 +38,9 @@ def get_maximized_pleasure(time_have: int, movies_origin: List[Movie]) -> List[M
         else:
             break
 
-        try:
-            movie_index = index(movies_length, temp_movie.movie_length)
-            del movies[movie_index]
-        except ValueError:
-            print('value error')
-            break
+        movies.remove(temp_movie)
         pq.clear()
         curr = 0
-        movies_length = [m.movie_length for m in movies]
         n=len(movies)
     
     return res

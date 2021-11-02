@@ -23,10 +23,10 @@ class TestPickAlgoMethods(unittest.TestCase):
 
     def test_pick_movies_by_time(self):
         app = create_app()
-        time_have = 400
+        time_have = 500
         with app.app_context():
             db = get_db()
-            movies = db.query_all_movies_havent_seen_by_userid(3)
+            movies = db.query_all_movies_havent_seen_by_userid(5)
             res = pick_movies_by_time(time_have, movies)
             for r in res:
                 print(tuple(r))

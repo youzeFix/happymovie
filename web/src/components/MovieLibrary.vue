@@ -6,6 +6,17 @@
         <el-button type="primary" icon="el-icon-plus" @click="addMovieData()">新增</el-button>
         <el-button type="danger" icon="el-icon-delete" @click="deleteMovieData()">删除</el-button>
         <el-button type="success" icon="el-icon-upload2" @click="bulkImport()">批量导入</el-button>
+
+        <el-autocomplete
+          class="inline-input search-input"
+          prefix-icon="el-icon-search"
+          v-model="search_input"
+          value-key="movie_name"
+          :fetch-suggestions="querySearch"
+          placeholder="请输入电影名称"
+          :trigger-on-focus="false"
+          @select="handleSearchInputSelect"
+        ></el-autocomplete>
     </div>
     
     <el-table
@@ -224,7 +235,8 @@
         bulkImportDialogVisible: false,
         fileList: [],
         currentPage: 1,
-        pageSize: 11
+        pageSize: 11,
+        search_input: ''
       }
     },
     computed: {
@@ -245,6 +257,22 @@
     },
 
     methods: {
+      querySearch(queryString, cb) {
+        let results = queryString ? this.tableData.filter(this.createSearchFilter(queryString)) : this.tableData;
+        // 调用 callback 返回建议列表的数据
+        console.log(queryString)
+        console.log(results)
+        cb(results);
+      },
+      createSearchFilter(queryString) {
+        return (movie) => {
+          // console.log(movie.movie_name)
+          return (movie.movie_name.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
+        };
+      },
+      handleSearchInputSelect(item) {
+        console.log(item);
+      },
       tableIndexMethod(index){
         return this.pageSize*(this.currentPage-1)+1+index
       },
@@ -586,5 +614,8 @@
 .dialog-batch-import {
   text-align: center;
   /* width: 50%; */
+}
+.search-input {
+  margin-left: 10px;
 }
 </style>

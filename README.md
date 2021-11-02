@@ -36,3 +36,44 @@ flask init-db
 ```sh
 flask import-movies --filename top250.xlsx --creatorid 1
 ```
+
+## Docker
+
+### 构建server镜像
+
+```sh
+docker build . -t happymovie-server
+```
+
+### 启动server镜像
+
+```sh
+docker run -d --name happymovie-server --network happymovie-net --network-alias happymovie-server -p 5000:5000 happymovie-server
+```
+
+### 构建web镜像
+
+```sh
+docker build . -t happymovie-web
+```
+
+### 启动web镜像
+
+```sh
+docker run -d --name happymovie-web --network happymovie-net --network-alias happymovie-web -p 8080:80 happymovie-web
+```
+
+## Docker-compose
+
+### 启动
+
+```sh
+docker-compose -d up
+```
+
+### 停止
+
+```
+docker-compose down
+```
+

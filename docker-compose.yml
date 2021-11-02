@@ -1,0 +1,25 @@
+version: "3.9"
+
+networks: 
+  happymovie-net:
+    name: happymovie-net
+
+services: 
+
+  happymovie-web:
+    container_name: happymovie-web
+    image: happymovie-web
+    ports: 
+      - "8080:80"
+    networks: 
+      - happymovie-net
+
+  
+  happymovie-server:
+    container_name: happymovie-server
+    image: happymovie-server
+    ports: 
+      - "5000:5000"
+    networks:
+      - happymovie-net
+

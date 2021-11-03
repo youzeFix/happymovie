@@ -86,6 +86,7 @@
         background
         :hide-on-single-page="true"
         layout="prev, pager, next"
+        :current-page.sync="currentPage"
         :page-size="pageSize"
         :total="tableData.length"
         @current-change="handleCurrentPageChange">
@@ -272,6 +273,12 @@
       },
       handleSearchInputSelect(item) {
         console.log(item);
+        let index = this.tableData.indexOf(item)
+        let pageNum = Math.ceil(index/this.pageSize)
+        console.log('pageNum is'+pageNum)
+        this.currentPage = pageNum;
+        this.updateCurrentPageTableData();
+        this.setCurrent(item);
       },
       tableIndexMethod(index){
         return this.pageSize*(this.currentPage-1)+1+index
@@ -280,9 +287,9 @@
         let startIndex = (this.currentPage-1)*this.pageSize + 1
         this.currentPageTableData = this.tableData.slice(startIndex, startIndex+this.pageSize)
       },
-      handleCurrentPageChange(newPage){
-        this.currentPage = newPage
-        console.log('current page is '+newPage)
+      handleCurrentPageChange(){
+        // this.currentPage = newPage
+        console.log('current page is '+this.currentPage)
         this.updateCurrentPageTableData()
       },
       download_movies_template(){

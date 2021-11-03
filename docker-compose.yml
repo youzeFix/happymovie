@@ -19,7 +19,7 @@ services:
     container_name: happymovie-server
     image: happymovie-server
     ports: 
-      - "5000:5000"
+      - "5000:80"
     networks:
       - happymovie-net
 

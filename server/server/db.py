@@ -4,7 +4,7 @@ import click
 from flask import current_app, g
 from flask.app import Flask
 from flask.cli import with_appcontext
-import time
+import pathlib
 from typing import Tuple, List
 import pandas
 import datetime
@@ -31,6 +31,11 @@ def init_db():
 class DB:
 
     def __init__(self) -> None:
+        # auto init db
+        if pathlib.Path(current_app.config['DATABASE']).exists() is False and current_app.config['AUTO_INIT_DB']:
+            current_app.logger.info('auto init db')
+            init_db()
+            
         self._db = sqlite3.connect(
             current_app.config['DATABASE'],
             detect_types=sqlite3.PARSE_DECLTYPES

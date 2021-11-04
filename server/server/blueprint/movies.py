@@ -3,7 +3,7 @@ import json
 import logging
 from ..utils import datetime_to_json
 import datetime
-from ..pick_algo import pick_movies_by_time
+from ..pick_algo import pick_movies_by_num, pick_movies_by_time
 from .auth import login_required
 
 from ..db import get_db
@@ -126,7 +126,12 @@ def pick_movie():
 
     movies_havent_seen = db.query_all_movies_havent_seen_by_userid(g.user['id'])
 
-    pick_res = pick_movies_by_time(value, movies_havent_seen)
+    # type=1, pick by time; type=2, pick by num
+    pick_res = []
+    if pick_type == 1:
+        pick_res = pick_movies_by_time(value, movies_havent_seen)
+    elif pick_type == 2:
+        pick_res = pick_movies_by_num(value, movies_havent_seen)
 
     data = []
     for row in pick_res:

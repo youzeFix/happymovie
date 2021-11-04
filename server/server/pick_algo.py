@@ -59,3 +59,23 @@ def pick_movies_by_time(time_have:int, movies:List) -> List:
         res.append(movies_map[m.movie_id])
 
     return res
+
+def get_maximized_nums(num: int, movies_origin: List[Movie]) -> List[Movie]:
+    movies = movies_origin
+    movies.sort(key=lambda x:x.movie_weight)
+    
+    return movies[:num]
+
+def pick_movies_by_num(num:int, movies:List) -> List:
+    movies_input = []
+    movies_map = {}
+    for m in movies:
+        # index, movie_runtime, movie_name, movie_rating*movie_likability
+        movies_input.append(Movie(m['id'], m['movie_runtime'], m['movie_name'], -m['movie_rating']*m['movie_likability']))
+        movies_map[m['id']] = m
+    pick_output = get_maximized_nums(num, movies_input)
+    res = []
+    for m in pick_output:
+        res.append(movies_map[m.movie_id])
+
+    return res

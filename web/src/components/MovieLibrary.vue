@@ -16,6 +16,7 @@
           placeholder="请输入电影名称"
           :trigger-on-focus="false"
           @select="handleSearchInputSelect"
+          clearable
         ></el-autocomplete>
     </div>
     

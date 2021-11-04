@@ -65,7 +65,23 @@
         })
       },
       movieNumsPickOK(){
-        this.$router.push('/pick-result')
+        let that = this;
+        this.pick_loading = true;
+        this.$axios.post('/movie/pick', {
+          'type': 2,
+          'value': this.movies_num_input
+        })
+        .then(function(response){
+          console.log(response.data);
+
+          that.$router.push({name: 'MoviePickResult', params:{data: response.data['data']}})
+        })
+        .catch(function(error){
+          console.log(error)
+        })
+        .then(function(){
+          that.pick_loading=false;
+        })
       }
     }
   };

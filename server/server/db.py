@@ -34,13 +34,19 @@ class DB:
         # auto init db
         if pathlib.Path(current_app.config['DATABASE']).exists() is False and current_app.config['AUTO_INIT_DB']:
             current_app.logger.info('auto init db')
-            init_db()
-            
-        self._db = sqlite3.connect(
-            current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES
-        )
-        self._db.row_factory = sqlite3.Row
+            self._db = sqlite3.connect(
+                current_app.config['DATABASE'],
+                detect_types=sqlite3.PARSE_DECLTYPES
+            )
+            self._db.row_factory = sqlite3.Row
+            with current_app.open_resource('schema.sql') as f:
+                self._db.executescript(f.read().decode('utf8'))
+        else:
+            self._db = sqlite3.connect(
+                current_app.config['DATABASE'],
+                detect_types=sqlite3.PARSE_DECLTYPES
+            )
+            self._db.row_factory = sqlite3.Row
 
     def close(self):
         self._db.close()

@@ -2,6 +2,8 @@ import os
 
 from flask import Flask
 from logging.config import dictConfig
+from .db import init_db
+import pathlib
 
 dictConfig({
     'version': 1,
@@ -40,6 +42,12 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    # auto init db
+    if pathlib.Path(app.config['DATABASE']).exists() is False and app.config['AUTO_INIT_DB']:
+        app.logger.info('auto init db')
+        with app.app_context():
+            init_db()
 
     # a simple page that says hello
     @app.route('/hello')

@@ -1,10 +1,12 @@
 from flask import Blueprint, g, request, current_app
 import json
 import logging
-from ..utils import datetime_to_json
+from ..utils import datetime_to_json, get_time_string
 import datetime
 from ..pick_algo import pick_movies_by_num, pick_movies_by_time
 from .auth import login_required
+import pandas
+import pathlib
 
 from ..db import get_db
 
@@ -150,6 +152,29 @@ def pick_movie():
 
     return json.dumps(res, default=datetime_to_json, ensure_ascii=False)
     
+@bp.route('/export', methods=['GET'])
+# @login_required
+def export_movies_data():
+    userid = g.user['id']
+    db = get_db()
+    movies = db.query_all_movies_by_userid(userid)
+    export_filename = ''
+    if movies:
+        df = pandas.DataFrame(movies, columns=movies[0].keys())
+        columns_to_drop = ['id', 'creator_id']
+        for col in columns_to_drop:
+            del df[col]
+        print(df)
+        time_string = get_time_string()
+        export_filename = f'{userid}-export-{time_string}.xlsx'
+        export_path = pathlib.Path(current_app.config['DOWNLOAD_FOLDER'])
+        if export_path.exists() is False:
+            export_path.mkdir()
+        
+        df.to_excel(export_path.joinpath(export_filename))
+    else:
+        return {'statusCode': 0, 'message':'there are no movies'}
 
+    return {'statusCode': 0, 'message':'export successful', 'data': {'filename': export_filename}}
 
     

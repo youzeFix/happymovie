@@ -2,10 +2,15 @@
     <div class="movie-library">
     <div class="button-group">
         <el-button type="success" icon="el-icon-refresh" @click="loadMovieData()">刷新</el-button>
+        <el-button-group class="button-group-sub">
         <el-button type="primary" icon="el-icon-edit-outline" @click="editMovieData()" :disabled='edit_disabled'>编辑</el-button>
         <el-button type="primary" icon="el-icon-plus" @click="addMovieData()">新增</el-button>
         <el-button type="danger" icon="el-icon-delete" @click="deleteMovieData()">删除</el-button>
+        </el-button-group>
+        <el-button-group class="button-group-sub">
         <el-button type="success" icon="el-icon-upload2" @click="bulkImport()">批量导入</el-button>
+        <el-button type="primary" icon="el-icon-download" @click="exportMovies()">导出</el-button>
+        </el-button-group>
 
         <el-autocomplete
           class="inline-input search-input"
@@ -600,6 +605,44 @@
         .then(function(){
           that.loading = false;
         })
+      },
+      exportMovies(){
+        if(!this.loggedin){
+          this.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            });
+          return
+        }
+        let that = this;
+        this.loading = true;
+        this.$axios.get('/movie/export')
+        .then(function(response){
+          console.log(response.data);
+          let statusCode = response.data['statusCode']
+          if(statusCode == 0){
+            that.$message({
+              showClose: true,
+              message: '导出成功',
+              type: 'success'
+            })
+            let fileUrl = '/files/download/' + response.data['data']['filename']
+            window.open(fileUrl)
+          }else if(statusCode == -1){
+            that.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            })
+          }
+        })
+        .catch(function(error){
+          console.log(error);
+        })
+        .then(function(){
+          that.loading = false;
+        })
       }
     }
   }
@@ -608,7 +651,10 @@
 <style scoped>
 .button-group {
     margin-top: 20px;
-    margin-left: 5px;
+    margin-left: 8px;
+}
+.button-group-sub {
+  margin-left: 10px;
 }
 .dialog-footer {
   text-align: center;

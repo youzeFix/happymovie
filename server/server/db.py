@@ -100,13 +100,13 @@ class DB:
 
         return res
 
-    def query_all_movies_by_userid(self, user_id:int) -> List[Tuple]:
+    def query_all_movies_by_userid(self, user_id:int) -> List:
         STATEMENT = '''
         SELECT * FROM movies WHERE creator_id=?
         '''
         res = []
         for row in self._db.execute(STATEMENT, (user_id,)):
-            res.append(tuple(row))
+            res.append(row)
 
         return res
 

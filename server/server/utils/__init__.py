@@ -1,8 +1,17 @@
 import datetime
 import logging
 import pandas
+import time
 
 logger = logging.getLogger(__name__)
+
+def get_time_string():
+    """
+    获得形如20161010120000这样的年月日时分秒字符串
+    :return:
+    """
+    current = time.localtime()
+    return time.strftime("%Y%m%d%H%M%S", current)
 
 def datetime_to_json(obj:datetime):
     return obj.strftime('%Y-%m-%d %H:%M:%S')

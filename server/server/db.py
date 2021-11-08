@@ -10,6 +10,15 @@ import pandas
 import datetime
 from .utils import parse_movies_excel
 
+def adapt_list(l: List):
+    return ';'.join(l)
+
+def convert_list(s):
+    return s.decode('utf-8').split(';')
+
+sqlite3.register_adapter(list, adapt_list)
+sqlite3.register_converter('list', convert_list)
+
 def get_db():
     if 'db' not in g:
         g.db = DB()
@@ -66,8 +75,9 @@ class DB:
         with self._db:
             self._db.execute(INSERT_MOVIE_STATEMENT, sql_params)
 
-    def insert_movie_by_userid(self, movie_name:str, movie_runtime:int, movie_rating:float, creator_id:int, movie_likability:int=1, 
-                                have_seen:int=0, origin:str=None, create_time:datetime.datetime=None):
+    def insert_movie_by_userid(self, movie_name:str, movie_runtime:int, movie_rating:float, creator_id:int, 
+                                starring:list[str]=None, genre:list[str]=None, movie_likability:int=1, 
+                                have_seen:int=0, comment:str=None, create_time:datetime.datetime=None):
         loc = locals()
         del loc['self']
         sql_column = list(loc.keys())

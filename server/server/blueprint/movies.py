@@ -20,18 +20,10 @@ def get_all_movies():
     db_res = db.query_all_movies_by_userid(g.user['id'])
     # print(db_res)
     res = []
-
-    for row in db_res:
-        res.append({
-            'index': row[0],
-            'movie_name': row[1],
-            'movie_runtime': row[2],
-            'movie_rating': row[3],
-            'movie_likability': row[4],
-            'have_seen': row[5],
-            'origin': row[6],
-            'create_time': row[7]
-        })
+    if db_res:
+        keys = db_res[0].keys()
+        for row in db_res:
+            res.append({k:row[k] for k in keys})
         
     data = {'statusCode':0, 'message':'query success', 'data':res}
 
@@ -61,16 +53,7 @@ def insert_one_movie():
     lastrowid = db.insert_movie_by_userid(**temp_params)
 
     row = db.query_one_movie_by_id(lastrowid)
-    data = {
-        'index': row[0],
-        'movie_name': row[1],
-        'movie_runtime': row[2],
-        'movie_rating': row[3],
-        'movie_likability': row[4],
-        'have_seen': row[5],
-        'origin': row[6],
-        'create_time': row[7]
-    }
+    data = {k:row[k] for k in row.keys()}
 
     res = {'statusCode': 0, 'message':'insert movie success', 'data': data}
 
@@ -136,17 +119,11 @@ def pick_movie():
         pick_res = pick_movies_by_num(value, movies_havent_seen)
 
     data = []
+    keys = []
+    if pick_res:
+        keys = pick_res[0].keys()
     for row in pick_res:
-        data.append({
-            'index': row[0],
-            'movie_name': row[1],
-            'movie_runtime': row[2],
-            'movie_rating': row[3],
-            'movie_likability': row[4],
-            'have_seen': row[5],
-            'origin': row[6],
-            'create_time': row[7]
-        })
+        data.append({k:row[k] for k in keys})
 
     res = {'statusCode': 0, 'message':'pick successful', 'data': data}
 

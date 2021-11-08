@@ -12,11 +12,13 @@ CREATE TABLE user (
 CREATE TABLE movies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     movie_name TEXT NOT NULL,
+    starring list,
+    genre list,
     movie_runtime INTEGER NOT NULL,
     movie_rating REAL NOT NULL,
     movie_likability INTEGER,
     have_seen INTEGER,
-    origin TEXT,
+    comment TEXT,
     create_time TIMESTAMP NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP,'localtime')),
     creator_id INTEGER NOT NULL,
     FOREIGN KEY (creator_id) REFERENCES user (id)

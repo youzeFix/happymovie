@@ -44,6 +44,19 @@
         label="电影名称"
         header-align="center">
         </el-table-column>
+
+        <el-table-column
+        property="genre"
+        label="类型"
+        header-align="center">
+        </el-table-column>
+
+        <el-table-column
+        property="starring"
+        label="主演"
+        header-align="center">
+        </el-table-column>
+
         <el-table-column
         property="movie_runtime"
         label="电影时长"
@@ -69,7 +82,8 @@
         label="是否看过"
         width="100"
         header-align="center"
-        align="center">
+        align="center"
+        :formatter="haveSeenFormatter">
         </el-table-column>
         <el-table-column
         property="create_time"
@@ -264,6 +278,13 @@
     },
 
     methods: {
+      haveSeenFormatter(row, column, cellValue){
+        if(cellValue == 1){
+          return '是'
+        }else if(cellValue == 0){
+          return '否'
+        }
+      },
       querySearch(queryString, cb) {
         let results = queryString ? this.tableData.filter(this.createSearchFilter(queryString)) : this.tableData;
         // 调用 callback 返回建议列表的数据
@@ -419,7 +440,7 @@
           }
           else
           {
-            this.movie_form.movie_id = this.currentRow.index;
+            this.movie_form.movie_id = this.currentRow.id;
             this.movie_form.movie_name = this.currentRow.movie_name;
             this.movie_form.movie_runtime = this.currentRow.movie_runtime;
             this.movie_form.movie_rating = this.currentRow.movie_rating;
@@ -457,7 +478,7 @@
               delete prop_diff['id'];
               for(let i=0; i< that.tableData.length; i++){
                 let ele = that.tableData[i];
-                if(ele['index'] == id){
+                if(ele['id'] == id){
                   // console.log('find it')
                   for(let prop in prop_diff){
                     ele[prop] = prop_diff[prop];
@@ -564,11 +585,11 @@
             });
             return
         }
-        let id = this.currentRow.index;
+        let id = this.currentRow.id;
         let that = this;
         let table_index = -1;
         for(let i=0; i<this.tableData.length; i++){
-          if(this.tableData[i]['index'] == id){
+          if(this.tableData[i]['id'] == id){
             table_index = i;
             break;
           }

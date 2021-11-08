@@ -42,8 +42,15 @@ class TestDBMethods(unittest.TestCase):
             res = db.query_all_users()
             print(res)
 
-    # def test_update_movie(self):
-    #     update_movie(1, movie_rating=9.6, have_seen=1)
+    def test_insert_movie(self):
+        app = create_app()
+        with app.app_context():
+            db = get_db()
+            res = db.insert_movie_by_userid('movie1111', '100', '9.6', 1, ['周杰伦', '林俊杰'], ['genre1', 'genre2'])
+            # print(res)
+            res = db.query_all_movies_by_userid(1)
+            for r in res:
+                print(r['starring'])
 
 
 if __name__ == "__main__":

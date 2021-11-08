@@ -419,7 +419,7 @@
             this.movie_form.movie_runtime = this.currentRow.movie_runtime;
             this.movie_form.movie_rating = this.currentRow.movie_rating;
             this.movie_form.movie_likability = this.currentRow.movie_likability;
-            this.movie_form.have_seen = this.currentRow.have_seen;
+            this.movie_form.have_seen = this.currentRow.have_seen + '';
             this.movie_form.create_time = this.currentRow.create_time;
             this.movie_form.origin = this.currentRow.origin;
             this.movie_copy = Object.assign({}, this.movie_form);
@@ -428,20 +428,21 @@
           
       },
       editDialogOk(){
-        if(!this.isDeepObjectEqual(this.movie_copy, this.movie_form)){
-          console.log('movie_form is changed');
-          let prop_diff = {};
-          for(let prop in this.movie_copy){
+        let movie_form_changed = false
+        let prop_diff = {};
+        for(let prop in this.movie_copy){
             if(this.movie_copy[prop] != this.movie_form[prop]){
               prop_diff[prop]=this.movie_form[prop];
+              movie_form_changed = true
             }
           }
+        if(movie_form_changed){
+          console.log('movie_form is changed');
           if(Object.keys(prop_diff).length){
             prop_diff['id'] = this.movie_copy.movie_id;
             const headerJSON = {
                 "Content-Type": "application/json"
             };
-            console.log(this.movie_copy)
             let that = this;
             this.dialogEditLoading = true;
             this.$axios.put('/movie/', prop_diff, {headers:headerJSON})
@@ -455,7 +456,6 @@
                   // console.log('find it')
                   for(let prop in prop_diff){
                     ele[prop] = prop_diff[prop];
-                    console.log
                   }
                   break;
                 }

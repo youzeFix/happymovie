@@ -93,8 +93,8 @@
         align="center">
         </el-table-column>
         <el-table-column
-        property="origin"
-        label="来源"
+        property="comment"
+        label="备注"
         header-align="center"
         align="center"
         >
@@ -145,8 +145,8 @@
         </el-date-picker>
         </el-form-item>
 
-        <el-form-item label="来源">
-        <el-input type="textarea" v-model="movie_form.origin"></el-input>
+        <el-form-item label="备注">
+        <el-input type="textarea" v-model="movie_form.comment"></el-input>
         </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -187,8 +187,8 @@
         </el-date-picker>
         </el-form-item>
 
-        <el-form-item label="来源">
-        <el-input type="textarea" v-model="movie_form.origin"></el-input>
+        <el-form-item label="备注">
+        <el-input type="textarea" v-model="movie_form.comment"></el-input>
         </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -244,7 +244,7 @@
             movie_likability: '',
             have_seen: '',
             create_time: '',
-            origin: ''
+            comment: ''
         },
         dialogEditLoading: false,
         dialogAddLoading: false,

@@ -54,8 +54,16 @@ def parse_movies_excel(f) -> pandas.DataFrame:
             return genre.split('/')
         return genre
 
+    def transform_haveseen(have_seen: str):
+        if have_seen == "是":
+            return 1
+        elif have_seen == '否':
+            return 0
+        return 0
+
     data['starring'] = data['starring'].apply(transform_starring)
     data['genre'] = data['genre'].apply(transform_genre)
+    data['have_seen'] = data['have_seen'].apply(transform_haveseen)
 
     # data['movie_runtime'] = data['movie_runtime'].apply(transform_runtime)
     return data

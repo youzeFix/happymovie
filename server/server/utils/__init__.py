@@ -43,6 +43,8 @@ def parse_movies_excel(f) -> pandas.DataFrame:
             return movie_runtime
 
         return 0
+
+    data = data.fillna('')
     # print(data)
     def transform_starring(starring: str):
         if starring:

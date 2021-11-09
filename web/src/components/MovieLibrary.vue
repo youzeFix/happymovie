@@ -48,13 +48,15 @@
         <el-table-column
         property="genre"
         label="类型"
-        header-align="center">
+        header-align="center"
+        :formatter="tableListFormatter">
         </el-table-column>
 
         <el-table-column
         property="starring"
         label="主演"
-        header-align="center">
+        header-align="center"
+        :formatter="tableListFormatter">
         </el-table-column>
 
         <el-table-column
@@ -116,9 +118,47 @@
     <!-- Form -->
     <el-dialog title="编辑电影" :visible.sync="dialogEditFormVisible">
     <el-form :model="movie_form" v-loading="dialogEditLoading">
+
         <el-form-item label="电影名称">
         <el-input v-model="movie_form.movie_name" autocomplete="off" disabled></el-input>
         </el-form-item>
+
+        <el-form-item label="主演">
+          <el-select
+            v-model="movie_form.starring"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            multiple-limit=3
+            placeholder="请输入主演演员">
+            <el-option
+              v-for="item in starring_demos"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="类型">
+          <el-select
+            v-model="movie_form.genre"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            multiple-limit=3
+            placeholder="请输入电影类型">
+            <el-option
+              v-for="item in genre_demos"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="电影时长">
         <el-input-number v-model="movie_form.movie_runtime" controls-position="right" :min="1" :max="1000" disabled></el-input-number>
         分钟
@@ -161,6 +201,43 @@
         <el-form-item label="电影名称" prop='movie_name'>
         <el-input v-model="movie_form.movie_name" autocomplete="off"></el-input>
         </el-form-item>
+
+        <el-form-item label="主演">
+          <el-select
+            v-model="movie_form.starring"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            multiple-limit=3
+            placeholder="请输入主演演员">
+            <el-option
+              v-for="item in starring_demos"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="类型">
+          <el-select
+            v-model="movie_form.genre"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            multiple-limit=3
+            placeholder="请输入电影类型">
+            <el-option
+              v-for="item in genre_demos"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="电影时长">
         <el-input-number v-model="movie_form.movie_runtime" controls-position="right" :min="1" :max="1000"></el-input-number>
         分钟
@@ -239,6 +316,8 @@
         movie_form: {
             movie_id: 0,
             movie_name: '',
+            starring:[],
+            genre:[],
             movie_runtime: '',
             movie_rating: '',
             movie_likability: '',
@@ -257,7 +336,27 @@
         fileList: [],
         currentPage: 1,
         pageSize: 11,
-        search_input: ''
+        search_input: '',
+        starring_demos: [{
+          value: '刘德华',
+          label: '刘德华'
+        }, {
+          value: '周润发',
+          label: '周润发'
+        }, {
+          value: '肖央',
+          label: '肖央'
+        }],
+        genre_demos: [{
+          value: '剧情',
+          label: '剧情'
+        }, {
+          value: '动作',
+          label: '动作'
+        }, {
+          value: '恐怖',
+          label: '恐怖'
+        }]
       }
     },
     computed: {
@@ -278,6 +377,9 @@
     },
 
     methods: {
+      tableListFormatter(row, column, cellValue){
+        return cellValue.join("/")
+      },
       haveSeenFormatter(row, column, cellValue){
         if(cellValue == 1){
           return '是'
@@ -311,7 +413,7 @@
         return this.pageSize*(this.currentPage-1)+1+index
       },
       updateCurrentPageTableData(){
-        let startIndex = (this.currentPage-1)*this.pageSize + 1
+        let startIndex = (this.currentPage-1)*this.pageSize
         this.currentPageTableData = this.tableData.slice(startIndex, startIndex+this.pageSize)
       },
       handleCurrentPageChange(){
@@ -442,6 +544,8 @@
           {
             this.movie_form.movie_id = this.currentRow.id;
             this.movie_form.movie_name = this.currentRow.movie_name;
+            this.movie_form.starring = this.currentRow.starring;
+            this.movie_form.genre = this.currentRow.genre;
             this.movie_form.movie_runtime = this.currentRow.movie_runtime;
             this.movie_form.movie_rating = this.currentRow.movie_rating;
             this.movie_form.movie_likability = this.currentRow.movie_likability;
@@ -534,12 +638,14 @@
         this.dialogAddLoading = true;
         this.$axios.post('/movie/', {
           'movie_name': this.movie_form.movie_name,
+          'starring': this.movie_form.starring,
+          'genre': this.movie_form.genre,
           'movie_runtime': this.movie_form.movie_runtime,
           'movie_rating': this.movie_form.movie_rating,
           'movie_likability': this.movie_form.movie_likability,
           'have_seen': this.movie_form.have_seen,
           'create_time': this.movie_form.create_time,
-          'origin': this.movie_form.origin
+          'comment': this.movie_form.origin
         })
         .then(function(response){
           console.log(response.data);

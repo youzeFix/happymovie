@@ -164,11 +164,12 @@ class DB:
         with self._db:
             self._db.execute(REMOVE_MOVIE_STATEMENT, (id,))
 
-    def update_movie(self, id:int, movie_runtime:int=None, movie_rating:float=None, movie_likability:int=None, have_seen:int=None, origin:str=None):
+    def update_movie(self, id:int, starring:list[str]=None, genre:list[str]=None, movie_runtime:int=None, movie_rating:float=None, movie_likability:int=None, have_seen:int=None, origin:str=None):
         params = locals()
         del params['id']
         del params['self']
-        tmp_l = [f"{k}='{v}'" for k,v in params.items() if v is not None]
+        tmp_l = [f"{k}=?" for k,v in params.items() if v is not None]
+        sql_params = ([i for i,v in params.items() if v is not None])
 
         UPDATE_MOVIE_STATEMENT = f'''
         UPDATE movies SET {','.join(tmp_l)} WHERE id = ?
@@ -176,7 +177,7 @@ class DB:
         # print(UPDATE_MOVIE_STATEMENT, id)
 
         with self._db:
-            self._db.execute(UPDATE_MOVIE_STATEMENT, (id,))
+            self._db.execute(UPDATE_MOVIE_STATEMENT, (*sql_params, id))
 
     def query_user_by_username(self, username:str) -> Tuple:
         STATEMENT = '''

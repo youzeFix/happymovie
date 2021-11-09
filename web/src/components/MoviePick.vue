@@ -2,15 +2,49 @@
 <div class="pick-tabs" v-loading="pick_loading">
   <el-tabs class="movie-pick-tabs" v-model="activeTabName" @tab-click="handleClick">
     <el-tab-pane label="按时长" name="time_length_tab">
-      <el-col :span="5">
+
+      <el-col :span="20">
         <el-input
           type="number"
           placeholder="请输入分钟数"
           v-model="time_length_input"
           min=0>
         </el-input>
+      
+
+      
+          <el-select
+            v-model="starring_input"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            multiple-limit=3
+            placeholder="请输入主演演员">
+            <el-option
+              v-for="item in starring_demos"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+      
+          <el-select
+            v-model="genre_input"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            multiple-limit=3
+            placeholder="请输入电影类型">
+            <el-option
+              v-for="item in genre_demos"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
       </el-col>
-      分钟
       <el-button type="success" @click="timeLengthPickOK()">确认</el-button>
     </el-tab-pane>
 
@@ -38,7 +72,29 @@
         activeTabName: 'time_length_tab',
         time_length_input: '',
         movies_num_input: '',
-        pick_loading: false
+        pick_loading: false,
+        starring_input:[],
+        genre_input:[],
+        starring_demos: [{
+          value: '刘德华',
+          label: '刘德华'
+        }, {
+          value: '周润发',
+          label: '周润发'
+        }, {
+          value: '肖央',
+          label: '肖央'
+        }],
+        genre_demos: [{
+          value: '剧情',
+          label: '剧情'
+        }, {
+          value: '动作',
+          label: '动作'
+        }, {
+          value: '恐怖',
+          label: '恐怖'
+        }]
       };
     },
     methods: {

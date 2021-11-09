@@ -130,7 +130,7 @@
             filterable
             allow-create
             default-first-option
-            multiple-limit=3
+            :multiple-limit="3"
             placeholder="请输入主演演员">
             <el-option
               v-for="item in starring_demos"
@@ -148,7 +148,7 @@
             filterable
             allow-create
             default-first-option
-            multiple-limit=3
+            :multiple-limit="3"
             placeholder="请输入电影类型">
             <el-option
               v-for="item in genre_demos"
@@ -209,7 +209,7 @@
             filterable
             allow-create
             default-first-option
-            multiple-limit=3
+            :multiple-limit="3"
             placeholder="请输入主演演员">
             <el-option
               v-for="item in starring_demos"
@@ -227,7 +227,7 @@
             filterable
             allow-create
             default-first-option
-            multiple-limit=3
+            :multiple-limit="3"
             placeholder="请输入电影类型">
             <el-option
               v-for="item in genre_demos"

@@ -3,23 +3,25 @@
   <el-tabs class="movie-pick-tabs" v-model="activeTabName" @tab-click="handleClick">
     <el-tab-pane label="按时长" name="time_length_tab">
 
-      <el-col :span="20">
+      <el-row :gutter="10">
+
+      <el-col :span="3">
         <el-input
           type="number"
           placeholder="请输入分钟数"
           v-model="time_length_input"
           min=0>
         </el-input>
+      </el-col>
       
-
-      
+        <el-col :span="3">
           <el-select
             v-model="starring_input"
             multiple
             filterable
             allow-create
             default-first-option
-            multiple-limit=3
+            :multiple-limit="3"
             placeholder="请输入主演演员">
             <el-option
               v-for="item in starring_demos"
@@ -28,14 +30,16 @@
               :value="item.value">
             </el-option>
           </el-select>
-      
+        </el-col>
+
+          <el-col :span="3">
           <el-select
             v-model="genre_input"
             multiple
             filterable
             allow-create
             default-first-option
-            multiple-limit=3
+            :multiple-limit="3"
             placeholder="请输入电影类型">
             <el-option
               v-for="item in genre_demos"
@@ -44,12 +48,19 @@
               :value="item.value">
             </el-option>
           </el-select>
+          </el-col>
+
+      <el-col :span="3">
+        <el-button type="success" @click="timeLengthPickOK()">Pick!</el-button>
+
       </el-col>
-      <el-button type="success" @click="timeLengthPickOK()">确认</el-button>
+      </el-row>
+      
     </el-tab-pane>
 
     <el-tab-pane label="按部数" name="movies_num_tab">
-      <el-col :span="5">
+      <el-row :gutter="10">
+      <el-col :span="3">
         <el-input
           type="number"
           placeholder="请输入部数"
@@ -58,8 +69,47 @@
           clearable>
         </el-input>
       </el-col>
-      部
-      <el-button type="success" @click="movieNumsPickOK()">确认</el-button>
+
+      <el-col :span="3">
+          <el-select
+            v-model="starring_input"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            :multiple-limit="3"
+            placeholder="请输入主演演员">
+            <el-option
+              v-for="item in starring_demos"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-col>
+
+          <el-col :span="3">
+          <el-select
+            v-model="genre_input"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            :multiple-limit="3"
+            placeholder="请输入电影类型">
+            <el-option
+              v-for="item in genre_demos"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+          </el-col>
+
+      <el-col :span="3">
+      <el-button type="success" @click="movieNumsPickOK()">Pick!</el-button>
+      </el-col>
+      </el-row>
     </el-tab-pane>
   </el-tabs>
 </div>

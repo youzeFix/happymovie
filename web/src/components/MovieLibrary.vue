@@ -404,7 +404,7 @@
       },
       handleSearchInputSelect(item) {
         console.log(item);
-        let index = this.tableData.indexOf(item)
+        let index = this.tableData.indexOf(item)+1
         let pageNum = Math.ceil(index/this.pageSize)
         console.log('pageNum is'+pageNum)
         this.currentPage = pageNum;

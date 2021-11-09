@@ -21,7 +21,7 @@ def parse_movies_excel(f) -> pandas.DataFrame:
     # 必须列
     required_col = ['movie_name', 'movie_runtime', 'movie_rating']
     # 列范围（所有列）
-    col_scope = ['movie_name', 'movie_runtime', 'movie_rating', 'movie_likability', 'have_seen', 'origin']
+    col_scope = ['movie_name', 'starring', 'genre', 'movie_runtime', 'movie_rating', 'movie_likability', 'have_seen', 'origin']
     excel = pandas.read_excel(f)
     # 获取在列范围内的列
     cols = [col for col in excel.columns if col in col_scope]
@@ -44,6 +44,18 @@ def parse_movies_excel(f) -> pandas.DataFrame:
 
         return 0
     # print(data)
+    def transform_starring(starring: str):
+        if starring:
+            return starring.split('/')
+        return starring
+
+    def transform_genre(genre: str):
+        if genre:
+            return genre.split('/')
+        return genre
+
+    data['starring'] = data['starring'].apply(transform_starring)
+    data['genre'] = data['genre'].apply(transform_genre)
 
     # data['movie_runtime'] = data['movie_runtime'].apply(transform_runtime)
     return data

@@ -2,7 +2,7 @@ module.exports = {
     chainWebpack(config){
       //修改htmlWebpackPlugin
       config.plugin('html').tap(args => {
-        args[0].title = 'happymovie';
+        args[0].title = '人类高质量电影';
         return args;
       })
     },

@@ -169,12 +169,12 @@ class DB:
         del params['id']
         del params['self']
         tmp_l = [f"{k}=?" for k,v in params.items() if v is not None]
-        sql_params = ([i for i,v in params.items() if v is not None])
+        sql_params = ([v for i,v in params.items() if v is not None])
 
         UPDATE_MOVIE_STATEMENT = f'''
         UPDATE movies SET {','.join(tmp_l)} WHERE id = ?
         '''
-        # print(UPDATE_MOVIE_STATEMENT, id)
+        # print(UPDATE_MOVIE_STATEMENT, id, sql_params)
 
         with self._db:
             self._db.execute(UPDATE_MOVIE_STATEMENT, (*sql_params, id))

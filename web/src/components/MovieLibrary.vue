@@ -378,7 +378,9 @@
 
     methods: {
       tableListFormatter(row, column, cellValue){
-        return cellValue.join("/")
+        if(cellValue){
+          return cellValue.join("/")
+        }
       },
       haveSeenFormatter(row, column, cellValue){
         if(cellValue == 1){

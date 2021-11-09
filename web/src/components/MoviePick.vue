@@ -156,7 +156,11 @@
         this.pick_loading = true;
         this.$axios.post('/movie/pick', {
           'type': 1,
-          'value': this.time_length_input
+          'data': {
+            'value': this.time_length_input,
+            'starring': this.starring_input,
+            'genre': this.genre_input
+          }
         })
         .then(function(response){
           console.log(response.data);
@@ -175,7 +179,11 @@
         this.pick_loading = true;
         this.$axios.post('/movie/pick', {
           'type': 2,
-          'value': this.movies_num_input
+          'data': {
+            'value': this.movies_num_input,
+            'starring': this.starring_input,
+            'genre': this.genre_input
+          }
         })
         .then(function(response){
           console.log(response.data);

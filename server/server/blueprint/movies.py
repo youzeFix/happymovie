@@ -102,21 +102,35 @@ def pick_movie():
         return {'statusCode': -1, 'message':'req data is not json'}
 
     pick_type = r.get('type')
-    value = int(r.get('value'))
-    if pick_type is None or value == 0:
-        logger.error('pick_type or value is null, parameter error')
-        return {'statusCode': -1, 'message':'pick_type or value is null, parameter error'}
+    data = r.get('data')
+    if pick_type is None or data is None:
+        logger.error('pick_type or data is null, parameter error')
+        return {'statusCode': -1, 'message':'pick_type or data is null, parameter error'}
 
     db = get_db()
 
     movies_havent_seen = db.query_all_movies_havent_seen_by_userid(g.user['id'])
 
+    starrings = data.get('starring')
+    genres = data.get('genre')
+
+    def filter_by_starring_and_genre(row):
+        for s in starrings:
+            if s not in row['starring']:
+                return False
+        for g in genres:
+            if g not in row['genre']:
+                return False
+        return True
+
+    movies_input = list(filter(filter_by_starring_and_genre, movies_havent_seen))
+
     # type=1, pick by time; type=2, pick by num
     pick_res = []
     if pick_type == 1:
-        pick_res = pick_movies_by_time(value, movies_havent_seen)
+        pick_res = pick_movies_by_time(int(data.get('value')), movies_input)
     elif pick_type == 2:
-        pick_res = pick_movies_by_num(value, movies_havent_seen)
+        pick_res = pick_movies_by_num(int(data.get('value')), movies_input)
 
     data = []
     keys = []

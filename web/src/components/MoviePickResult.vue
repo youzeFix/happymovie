@@ -19,6 +19,21 @@
         label="电影名称"
         header-align="center">
         </el-table-column>
+
+        <el-table-column
+        property="genre"
+        label="类型"
+        header-align="center"
+        :formatter="tableListFormatter">
+        </el-table-column>
+
+        <el-table-column
+        property="starring"
+        label="主演"
+        header-align="center"
+        :formatter="tableListFormatter">
+        </el-table-column>
+
         <el-table-column
         property="movie_runtime"
         label="电影时长"
@@ -44,7 +59,8 @@
         label="是否看过"
         width="100"
         header-align="center"
-        align="center">
+        align="center"
+        :formatter="haveSeenFormatter">
         </el-table-column>
         <el-table-column
         property="create_time"
@@ -54,8 +70,8 @@
         align="center">
         </el-table-column>
         <el-table-column
-        property="origin"
-        label="来源"
+        property="comment"
+        label="备注"
         header-align="center"
         align="center"
         >
@@ -74,6 +90,18 @@
         }
       },
     methods: {
+      tableListFormatter(row, column, cellValue){
+        if(cellValue){
+          return cellValue.join("/")
+        }
+      },
+      haveSeenFormatter(row, column, cellValue){
+        if(cellValue == 1){
+          return '是'
+        }else if(cellValue == 0){
+          return '否'
+        }
+      },
       goBack() {
         console.log('go back');
         window.history.length > 1 ? this.$router.go(-1) : this.$router.push('/')

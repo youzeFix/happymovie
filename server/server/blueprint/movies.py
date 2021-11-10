@@ -103,6 +103,9 @@ def pick_movie():
 
     pick_type = r.get('type')
     data = r.get('data')
+    if data.get('value') == '':
+        logger.error('value can not be null')
+        return {'statusCode': -1, 'message':'value can not be null'}
     if pick_type is None or data is None:
         logger.error('pick_type or data is null, parameter error')
         return {'statusCode': -1, 'message':'pick_type or data is null, parameter error'}
@@ -160,6 +163,19 @@ def export_movies_data():
         for col in columns_to_drop:
             del df[col]
         print(df)
+        def convert_list(m):
+            if m:
+                return '/'.join(m)
+            return m
+        def convert_haveseen(have_seen):
+            if have_seen == 1:
+                return '是'
+            elif have_seen == 0:
+                return '否'
+            return ''
+        df['starring'] = df['starring'].apply(convert_list)
+        df['genre'] = df['genre'].apply(convert_list)
+        df['have_seen'] = df['have_seen'].apply(convert_haveseen)
         time_string = get_time_string()
         export_filename = f'{userid}-export-{time_string}.xlsx'
         export_path = pathlib.Path(current_app.config['DOWNLOAD_FOLDER'])

@@ -152,6 +152,14 @@
         console.log(tab, event);
       },
       timeLengthPickOK(){
+        if(this.time_length_input == 0){
+          this.$message({
+              showClose: true,
+              message: '请输入分钟数',
+              type: 'error'
+            });
+          return
+        }
         let that = this;
         this.pick_loading = true;
         this.$axios.post('/movie/pick', {
@@ -164,8 +172,15 @@
         })
         .then(function(response){
           console.log(response.data);
-
-          that.$router.push({name: 'MoviePickResult', params:{data: response.data['data']}})
+          if(response.data['statusCode'] != -1){
+            that.$router.push({name: 'MoviePickResult', params:{data: response.data['data']}})
+          }else{
+            that.$message({
+              showClose: true,
+              message: '请输入分钟数',
+              type: 'error'
+            });
+          }
         })
         .catch(function(error){
           console.log(error)
@@ -175,6 +190,14 @@
         })
       },
       movieNumsPickOK(){
+        if(this.movies_num_input == 0){
+          this.$message({
+              showClose: true,
+              message: '请输入部数',
+              type: 'error'
+            });
+          return
+        }
         let that = this;
         this.pick_loading = true;
         this.$axios.post('/movie/pick', {
@@ -187,8 +210,15 @@
         })
         .then(function(response){
           console.log(response.data);
-
-          that.$router.push({name: 'MoviePickResult', params:{data: response.data['data']}})
+          if(response.data['statusCode'] != -1){
+            that.$router.push({name: 'MoviePickResult', params:{data: response.data['data']}})
+          }else{
+            that.$message({
+              showClose: true,
+              message: '请输入部数',
+              type: 'error'
+            });
+          }
         })
         .catch(function(error){
           console.log(error)

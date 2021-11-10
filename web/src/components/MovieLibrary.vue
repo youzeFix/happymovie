@@ -553,7 +553,7 @@
             this.movie_form.movie_likability = this.currentRow.movie_likability;
             this.movie_form.have_seen = this.currentRow.have_seen + '';
             this.movie_form.create_time = this.currentRow.create_time;
-            this.movie_form.origin = this.currentRow.origin;
+            this.movie_form.comment = this.currentRow.comment;
             this.movie_copy = Object.assign({}, this.movie_form);
             this.dialogEditFormVisible = true;
           }
@@ -647,7 +647,7 @@
           'movie_likability': this.movie_form.movie_likability,
           'have_seen': this.movie_form.have_seen,
           'create_time': this.movie_form.create_time,
-          'comment': this.movie_form.origin
+          'comment': this.movie_form.comment
         })
         .then(function(response){
           console.log(response.data);

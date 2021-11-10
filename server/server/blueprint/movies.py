@@ -116,9 +116,13 @@ def pick_movie():
 
     def filter_by_starring_and_genre(row):
         for s in starrings:
+            if row['starring'] is None:
+                return False
             if s not in row['starring']:
                 return False
         for g in genres:
+            if row['genre'] is None:
+                return False
             if g not in row['genre']:
                 return False
         return True

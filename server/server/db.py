@@ -60,7 +60,7 @@ class DB:
     def close(self):
         self._db.close()
 
-    def insert_movie(self, movie_name:str, movie_runtime:int, movie_rating:float, movie_likability:int=1, have_seen:int=0, origin:str=None, create_time:datetime.datetime=None):
+    def insert_movie(self, movie_name:str, movie_runtime:int, movie_rating:float, movie_likability:int=1, have_seen:int=0, comment:str=None, create_time:datetime.datetime=None):
         loc = locals()
         del loc['self']
         sql_column = list(loc.keys())
@@ -164,7 +164,7 @@ class DB:
         with self._db:
             self._db.execute(REMOVE_MOVIE_STATEMENT, (id,))
 
-    def update_movie(self, id:int, starring:list[str]=None, genre:list[str]=None, movie_runtime:int=None, movie_rating:float=None, movie_likability:int=None, have_seen:int=None, origin:str=None):
+    def update_movie(self, id:int, starring:list[str]=None, genre:list[str]=None, movie_runtime:int=None, movie_rating:float=None, movie_likability:int=None, have_seen:int=None, comment:str=None):
         params = locals()
         del params['id']
         del params['self']

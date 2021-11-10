@@ -640,8 +640,8 @@
         this.dialogAddLoading = true;
         this.$axios.post('/movie/', {
           'movie_name': this.movie_form.movie_name,
-          'starring': this.movie_form.starring,
-          'genre': this.movie_form.genre,
+          'starring': this.movie_form.starring.map(function(item) { return item.trim(); }),
+          'genre': this.movie_form.genre.map(function(item) { return item.trim(); }),
           'movie_runtime': this.movie_form.movie_runtime,
           'movie_rating': this.movie_form.movie_rating,
           'movie_likability': this.movie_form.movie_likability,

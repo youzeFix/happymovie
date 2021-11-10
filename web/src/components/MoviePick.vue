@@ -10,7 +10,7 @@
           type="number"
           placeholder="请输入分钟数"
           v-model="time_length_input"
-          min=0>
+          min=1>
         </el-input>
       </el-col>
       
@@ -65,7 +65,7 @@
           type="number"
           placeholder="请输入部数"
           v-model="movies_num_input"
-          min=0
+          min=1
           clearable>
         </el-input>
       </el-col>

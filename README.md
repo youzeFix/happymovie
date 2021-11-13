@@ -63,6 +63,12 @@ docker build . -t happymovie-web
 docker run -d --name happymovie-web --network happymovie-net --network-alias happymovie-web -p 8080:80 happymovie-web
 ```
 
+### 连接到mysql数据库
+
+```sh
+docker run -it --network happymovie-net --rm mysql mysql -hhappymovie-db -uroot -p
+```
+
 ## Docker-compose
 
 ### 启动

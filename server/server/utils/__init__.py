@@ -21,7 +21,7 @@ def parse_movies_excel(f) -> pandas.DataFrame:
     # 必须列
     required_col = ['name', 'runtime', 'rating']
     # 列范围（所有列）
-    col_scope = ['name', 'starring', 'genre', 'runtime', 'rating', 'likability', 'have_seen', 'origin']
+    col_scope = ['name', 'starring', 'genre', 'runtime', 'rating', 'likability', 'have_seen', 'comment']
     excel = pandas.read_excel(f)
     # 获取在列范围内的列
     cols = [col for col in excel.columns if col in col_scope]

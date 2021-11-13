@@ -16,7 +16,7 @@
           class="inline-input search-input"
           prefix-icon="el-icon-search"
           v-model="search_input"
-          value-key="movie_name"
+          value-key="name"
           :fetch-suggestions="querySearch"
           placeholder="请输入电影名称"
           :trigger-on-focus="false"
@@ -198,7 +198,7 @@
 
     <el-dialog title="新增电影" :visible.sync="dialogAddFormVisible">
     <el-form :model="movie_form" :rules="add_dialog_rules" v-loading="dialogAddLoading" ref="movie_form">
-        <el-form-item label="电影名称" prop='movie_name'>
+        <el-form-item label="电影名称" prop='name'>
         <el-input v-model="movie_form.name" autocomplete="off"></el-input>
         </el-form-item>
 
@@ -252,7 +252,7 @@
         </el-form-item>
 
         <el-form-item label="是否看过">
-        <el-switch v-model="movie_form.have_seen" active-value="1" inactive-value="0"></el-switch>
+        <el-switch v-model="movie_form.have_seen"></el-switch>
         </el-form-item>
 
         <el-form-item label="创建时间">
@@ -328,7 +328,7 @@
         dialogEditLoading: false,
         dialogAddLoading: false,
         add_dialog_rules: {
-          movie_name: [
+          name: [
             {required: true, message:'请输入电影名称', trigger: 'blur'}
           ]
         },
@@ -383,9 +383,9 @@
         }
       },
       haveSeenFormatter(row, column, cellValue){
-        if(cellValue == 1){
+        if(cellValue == true){
           return '是'
-        }else if(cellValue == 0){
+        }else if(cellValue == false){
           return '否'
         }
       },
@@ -399,7 +399,7 @@
       createSearchFilter(queryString) {
         return (movie) => {
           // console.log(movie.movie_name)
-          return (movie.movie_name.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
+          return (movie.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
         };
       },
       handleSearchInputSelect(item) {
@@ -551,7 +551,7 @@
             this.movie_form.runtime = this.currentRow.runtime;
             this.movie_form.rating = this.currentRow.rating;
             this.movie_form.likability = this.currentRow.likability;
-            this.movie_form.have_seen = this.currentRow.have_seen + '';
+            this.movie_form.have_seen = this.currentRow.have_seen;
             this.movie_form.create_time = this.currentRow.create_time;
             this.movie_form.comment = this.currentRow.comment;
             this.movie_copy = Object.assign({}, this.movie_form);

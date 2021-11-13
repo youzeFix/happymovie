@@ -16,7 +16,7 @@ def insert_user(username:str, password:str, nickname:str=None) -> int:
     else:
         user = User(username=username, password=password)
     db.session.add(user)
-    db.commit()
+    db.session.commit()
     return user.id
 
 def query_user_by_id(id:int) -> User:
@@ -85,7 +85,9 @@ def query_movie(id) -> Movie:
     return Movie.query.get(id)
 
 def remove_movie(id):
-    Movie.query.get(id).delete()
+    movie = Movie.query.get(id)
+    db.session.delete(movie)
+    db.session.commit()
 
 def update_movie(id:int, starring:list[str]=None, genre:list[str]=None, runtime:int=None, rating:float=None, 
                     likability:int=None, have_seen:int=None, comment:str=None):
@@ -103,4 +105,9 @@ def update_movie(id:int, starring:list[str]=None, genre:list[str]=None, runtime:
         logger.error(f'movie {id} not exist')
         return
     
-    movie.update(sql_params)
+    for k,v in sql_params.items():
+        setattr(movie, k, v)
+
+    db.session.add(movie)
+    db.session.commit()
+    

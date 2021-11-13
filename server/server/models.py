@@ -15,7 +15,7 @@ class User(db.Model):
     usertype = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
-        return '<User id=%d, nickname=%r, username=%r>' % self.id, self.nickname, self.username
+        return '<User id=%d, nickname=%r, username=%r>' % (self.id, self.nickname, self.username)
 
 movie_starring_table = db.Table(
     'movie_starring',

@@ -22,7 +22,10 @@ def get_all_movies():
     if db_res:
         keys = db_res[0].field_list
         for row in db_res:
-            res.append({k:getattr(row, k) for k in keys})
+            temp = {k:getattr(row, k) for k in keys}
+            temp['starring'] = [s.name for s in temp['starring']]
+            temp['genre'] = [g.genre for g in temp['genre']]
+            res.append(temp)
         
     data = {'statusCode':0, 'message':'query success', 'data':res}
 
@@ -50,7 +53,9 @@ def insert_one_movie():
     insert_id = db.insert_movie_by_userid(**temp_params)
 
     row = db.query_movie(insert_id)
-    data = {k:row[k] for k in row.field_list}
+    data = {k:getattr(row, k) for k in row.field_list}
+    data['starring'] = [s.name for s in data['starring']]
+    data['genre'] = [g.genre for g in data['genre']]
 
     res = {'statusCode': 0, 'message':'insert movie success', 'data': data}
 
@@ -143,35 +148,38 @@ def pick_movie():
     if pick_res:
         keys = pick_res[0].field_list
     for row in pick_res:
-        data.append({k:getattr(row, k) for k in keys})
+        temp = {k:getattr(row, k) for k in keys}
+        temp['starring'] = [s.name for s in temp['starring']]
+        temp['genre'] = [g.genre for g in temp['genre']]
+        data.append(temp)
 
     res = {'statusCode': 0, 'message':'pick successful', 'data': data}
 
     return json.dumps(res, default=datetime_to_json, ensure_ascii=False)
     
 @bp.route('/export', methods=['GET'])
-# @login_required
+@login_required
 def export_movies_data():
-    userid = g.user['id']
+    userid = g.user.id
     movies = db.query_all_movies_by_userid(userid)
     export_filename = ''
     if movies:
         field_list = movies[0].field_list
         movies_input = []
         for m in movies:
-            temp = []
-            for field in field_list:
-                temp.append(getattr(m, field))
+            temp = {k:getattr(m, k) for k in field_list}
+            temp['starring'] = [s.name for s in temp['starring']]
+            temp['genre'] = [g.genre for g in temp['genre']]
             movies_input.append(temp)
         df = pandas.DataFrame(movies_input, columns=field_list)
-        columns_to_drop = ['id', 'creator_id']
+        columns_to_drop = ['id']
         for col in columns_to_drop:
             del df[col]
-        print(df)
+        # print(df)
         def convert_list(m):
             if m:
                 return '/'.join(m)
-            return m
+            return
         def convert_haveseen(have_seen):
             if have_seen == 1:
                 return '是'

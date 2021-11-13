@@ -15,7 +15,7 @@
         </el-table-column>
 
         <el-table-column
-        property="movie_name"
+        property="name"
         label="电影名称"
         header-align="center">
         </el-table-column>
@@ -35,20 +35,20 @@
         </el-table-column>
 
         <el-table-column
-        property="movie_runtime"
+        property="runtime"
         label="电影时长"
         width="80"
         header-align="center">
         </el-table-column>
         <el-table-column
-        property="movie_rating"
+        property="rating"
         label="电影评分"
         width="80"
         header-align="center"
         align="center">
         </el-table-column>
         <el-table-column
-        property="movie_likability"
+        property="likability"
         label="喜爱程度"
         width="80"
         header-align="center"

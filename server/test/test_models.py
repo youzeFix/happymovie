@@ -31,13 +31,15 @@ class TestModelsMethods(unittest.TestCase):
         app = create_app()
         with app.app_context():
             db.init_app(app)
-            s1 = Starring(name='actor1')
-            s2 = Starring(name='actor2')
-            db.session.add(s1)
-            db.session.add(s2)
-            db.session.commit()
+            # s1 = Starring(name='actor1')
+            # s2 = Starring(name='actor2')
+            # db.session.add(s1)
+            # db.session.add(s2)
+            # db.session.commit()
             res = Starring.query.all()
             print(res)
+            s = Starring.query.filter_by(name='actor1').first()
+            print(s in res)
 
     def test_insert_genre(self):
         app = create_app()

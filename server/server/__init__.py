@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask
 from logging.config import dictConfig
 
@@ -38,8 +36,6 @@ def create_app(test_config=None):
     db.init_app(app)
 
     from .blueprint import movies, auth, files
-    from . import db
-    db.init_app(app)
     app.register_blueprint(movies.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(files.bp)

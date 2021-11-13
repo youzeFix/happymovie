@@ -6,7 +6,7 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from ..db import get_db
+from .. import db
 
 logger = logging.getLogger(__name__)
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -17,7 +17,6 @@ def register():
         nickname = request.form['nickname']
         username = request.form['username']
         password = request.form['password']
-        db = get_db()
         error = None
 
         if not username:
@@ -41,11 +40,10 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        db = get_db()
         error = None
         user = db.query_user_by_username(username)
         if user:
-            print(tuple(user))
+            print(user)
 
         if user is None:
             error = f'Incorrect username.[{username}]'
@@ -56,9 +54,8 @@ def login():
 
         if error is None:
             session.clear()
-            session['user_id'] = user['id']
-            data = dict(user)
-            del data['password']
+            session['user_id'] = user.id
+            data = {k:getattr(user,k) for k in user.field_list}
             return {'statusCode':0, 'message':'login success', 'data':data}
 
     return {'statusCode':-1, 'message':f'login fail, {error}'}
@@ -70,7 +67,7 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        g.user = get_db().query_user_by_id(user_id)
+        g.user = db.query_user_by_id(user_id)
 
 @bp.route('/logout')
 def logout():

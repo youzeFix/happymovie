@@ -6,6 +6,7 @@ pymysql.install_as_MySQLdb()
 db = SQLAlchemy()
 
 class User(db.Model):
+    field_list = ['id', 'nickname', 'username']
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(80), default='DearJohn')
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -14,7 +15,7 @@ class User(db.Model):
     usertype = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User id=%d, nickname=%r, username=%r>' % self.id, self.nickname, self.username
 
 movie_starring_table = db.Table(
     'movie_starring',
@@ -36,12 +37,12 @@ class Movie(db.Model):
                                 backref=db.backref('movies', lazy=True))
     genre = db.relationship('Genre', secondary=movie_genre_table, lazy='subquery',
                                 backref=db.backref('movies', lazy=True))
-    runtime = db.Column(db.Integer, nullable=True)
-    rating = db.Column(db.Float, nullable=True)
+    runtime = db.Column(db.Integer, nullable=False)
+    rating = db.Column(db.Float, nullable=False)
     likability = db.Column(db.Integer, default=1)
     have_seen = db.Column(db.Boolean, default=False)
     comment = db.Column(db.String(500))
-    create_time = db.Column(db.DateTime, default=datetime.datetime.now())
+    create_time = db.Column(db.DateTime, default=datetime.datetime.now(), nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     creator = db.relationship('User', backref=db.backref('movies', lazy=True))
 

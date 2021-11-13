@@ -8,7 +8,7 @@ from .auth import login_required
 import pandas
 import pathlib
 
-from ..db import get_db
+from .. import db
 
 logger = logging.getLogger(__name__)
 bp = Blueprint('movies', __name__, url_prefix='/movie')
@@ -16,14 +16,13 @@ bp = Blueprint('movies', __name__, url_prefix='/movie')
 @bp.route('/all', methods=['GET'])
 @login_required
 def get_all_movies():
-    db = get_db()
-    db_res = db.query_all_movies_by_userid(g.user['id'])
+    db_res = db.query_all_movies_by_userid(g.user.id)
     # print(db_res)
     res = []
     if db_res:
-        keys = db_res[0].keys()
+        keys = db_res[0].field_list
         for row in db_res:
-            res.append({k:row[k] for k in keys})
+            res.append({k:getattr(row, k) for k in keys})
         
     data = {'statusCode':0, 'message':'query success', 'data':res}
 
@@ -38,8 +37,6 @@ def insert_one_movie():
         logger.warning('req_data is none, may be content-type is not application/json!')
         return {'statusCode': -1, 'message':'req data is not json'}
 
-    db = get_db()
-
     temp_params = {key:r.get(key) for key, _ in r.items()}
     if temp_params.get('create_time') is not None:
         try:
@@ -49,11 +46,11 @@ def insert_one_movie():
             print(e)
             return {'statusCode': -1, 'message':'date format must match %Y-%m-%d %H:%M:%S'}
 
-    temp_params['creator_id'] = g.user['id']
-    lastrowid = db.insert_movie_by_userid(**temp_params)
+    temp_params['creator_id'] = g.user.id
+    insert_id = db.insert_movie_by_userid(**temp_params)
 
-    row = db.query_one_movie_by_id(lastrowid)
-    data = {k:row[k] for k in row.keys()}
+    row = db.query_movie(insert_id)
+    data = {k:row[k] for k in row.field_list}
 
     res = {'statusCode': 0, 'message':'insert movie success', 'data': data}
 
@@ -72,8 +69,6 @@ def update_one_movie():
         print(r)
         return {'statusCode': -1, 'message':'update data must contain id'}
 
-    db = get_db()
-
     db.update_movie(**r)
 
     return {'statusCode': 0, 'message':'update movie success'}
@@ -87,7 +82,6 @@ def remove_one_movie():
         logger.warning('id is None!')
         return {'statusCode': -1, 'message':'delete method request id param'}
 
-    db = get_db()
     db.remove_movie(movie_id)
 
     return {'statusCode': 0, 'message':'remove movie success'}
@@ -110,23 +104,28 @@ def pick_movie():
         logger.error('pick_type or data is null, parameter error')
         return {'statusCode': -1, 'message':'pick_type or data is null, parameter error'}
 
-    db = get_db()
-
-    movies_havent_seen = db.query_all_movies_havent_seen_by_userid(g.user['id'])
+    movies_havent_seen = db.query_all_movies_havent_seen_by_userid(g.user.id)
 
     starrings = data.get('starring')
     genres = data.get('genre')
 
     def filter_by_starring_and_genre(row):
         for s in starrings:
-            if row['starring'] is None:
+            if row.starring is None:
                 return False
-            if s not in row['starring']:
+            temp = db.query_starring(s)
+            if temp is None:
                 return False
+            elif temp not in row.starring:
+                return False
+
         for g in genres:
-            if row['genre'] is None:
+            if row.genre is None:
                 return False
-            if g not in row['genre']:
+            temp = db.query_genre(g)
+            if temp is None:
+                return False
+            elif temp not in row.genre:
                 return False
         return True
 
@@ -142,9 +141,9 @@ def pick_movie():
     data = []
     keys = []
     if pick_res:
-        keys = pick_res[0].keys()
+        keys = pick_res[0].field_list
     for row in pick_res:
-        data.append({k:row[k] for k in keys})
+        data.append({k:getattr(row, k) for k in keys})
 
     res = {'statusCode': 0, 'message':'pick successful', 'data': data}
 
@@ -154,11 +153,17 @@ def pick_movie():
 # @login_required
 def export_movies_data():
     userid = g.user['id']
-    db = get_db()
     movies = db.query_all_movies_by_userid(userid)
     export_filename = ''
     if movies:
-        df = pandas.DataFrame(movies, columns=movies[0].keys())
+        field_list = movies[0].field_list
+        movies_input = []
+        for m in movies:
+            temp = []
+            for field in field_list:
+                temp.append(getattr(m, field))
+            movies_input.append(temp)
+        df = pandas.DataFrame(movies_input, columns=field_list)
         columns_to_drop = ['id', 'creator_id']
         for col in columns_to_drop:
             del df[col]

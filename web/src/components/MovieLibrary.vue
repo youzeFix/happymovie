@@ -173,7 +173,7 @@
         </el-form-item>
 
         <el-form-item label="是否看过">
-        <el-switch v-model="movie_form.have_seen" active-value="1" inactive-value="0"></el-switch>
+        <el-switch v-model="movie_form.have_seen"></el-switch>
         </el-form-item>
 
         <el-form-item label="创建时间">

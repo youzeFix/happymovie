@@ -1,42 +1,37 @@
 import unittest
 from server import create_app
-from server.db import get_db
+import server.db as db
 import pprint
 
 class TestDBMethods(unittest.TestCase):
 
-    def test_query_all_movies(self):
-        app = create_app()
-        with app.app_context():
-            db = get_db()
-            res = db.query_all_movies()
-            pprint.pprint(res)
+    # def test_query_all_movies(self):
+    #     app = create_app()
+    #     with app.app_context():
+    #         res = db.query_all_movies()
+    #         pprint.pprint(res)
 
     def test_query_all_movies_by_userid(self):
         app = create_app()
         with app.app_context():
-            db = get_db()
             res = db.query_all_movies_by_userid(1)
             pprint.pprint(res)
 
     def test_query_all_user(self):
         app = create_app()
         with app.app_context():
-            db = get_db()
             res = db.query_all_users()
             pprint.pprint(res)
 
     def test_query_user_by_username(self):
         app = create_app()
         with app.app_context():
-            db = get_db()
             res = db.query_user_by_username('usiel1')
             print(dict(res))
 
     def test_insert_user(self):
         app = create_app()
         with app.app_context():
-            db = get_db()
             res = db.insert_user('usiel3', '123456')
             print(res)
             res = db.query_all_users()
@@ -45,7 +40,6 @@ class TestDBMethods(unittest.TestCase):
     def test_insert_movie(self):
         app = create_app()
         with app.app_context():
-            db = get_db()
             res = db.insert_movie_by_userid('movie1111', '100', '9.6', 1, ['周杰伦', '林俊杰'], ['genre1', 'genre2'])
             # print(res)
             res = db.query_all_movies_by_userid(1)

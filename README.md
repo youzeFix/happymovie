@@ -24,6 +24,7 @@ python -m unittest test.test_pick_algo.TestPickAlgoMethods.test_get_maximized_pl
 ```powershell
 $env:FLASK_APP = "server"
 $env:FLASK_ENV = "development"
+$env:HAPPYMOVIE_SETTINGS = 'config/development_config.py'
 flask run
 ```
 

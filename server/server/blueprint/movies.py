@@ -201,4 +201,32 @@ def export_movies_data():
 
     return {'statusCode': 0, 'message':'export successful', 'data': {'filename': export_filename}}
 
-    
+@bp.route('/starrings', methods=['GET'])
+@login_required
+def get_all_starrings():
+    starrings = db.query_all_starring()
+    res = []
+    if starrings:
+        keys = starrings[0].field_list
+        for row in starrings:
+            temp = {k:getattr(row, k) for k in keys}
+            res.append(temp)
+        
+    data = {'statusCode':0, 'message':'query success', 'data':res}
+
+    return data
+
+@bp.route('/genres', methods=['GET'])
+# @login_required
+def get_all_genres():
+    genres = db.query_all_genre()
+    res = []
+    if genres:
+        keys = genres[0].field_list
+        for row in genres:
+            temp = {k:getattr(row, k) for k in keys}
+            res.append(temp)
+        
+    data = {'statusCode':0, 'message':'query success', 'data':res}
+
+    return data

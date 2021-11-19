@@ -3,6 +3,8 @@ from server import create_app
 import server.db as db
 import pprint
 
+test_config = 'config/development_config.py'
+
 class TestDBMethods(unittest.TestCase):
 
     # def test_query_all_movies(self):
@@ -12,7 +14,7 @@ class TestDBMethods(unittest.TestCase):
     #         pprint.pprint(res)
 
     def test_query_all_movies_by_userid(self):
-        app = create_app()
+        app = create_app(test_config)
         with app.app_context():
             res = db.query_all_movies_by_userid(1)
             pprint.pprint(res)
@@ -45,6 +47,13 @@ class TestDBMethods(unittest.TestCase):
             res = db.query_all_movies_by_userid(1)
             for r in res:
                 print(r['starring'])
+
+    def test_query_all_starrings(self):
+        app = create_app(test_config)
+        with app.app_context():
+            res = db.query_all_starring()
+            for r in res:
+                print(r)
 
 
 if __name__ == "__main__":

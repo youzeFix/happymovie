@@ -47,10 +47,12 @@ class Movie(db.Model):
     creator = db.relationship('User', backref=db.backref('movies', lazy=True))
 
 class Starring(db.Model):
+    field_list = ['id', 'name']
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
 
 class Genre(db.Model):
+    field_list = ['id', 'genre']
     id = db.Column(db.Integer, primary_key=True)
     genre = db.Column(db.String(10), unique=True, nullable=False)
 

@@ -24,14 +24,14 @@ def create_app(test_config=None):
         SECRET_KEY='dev'
     )
 
+    app.config.from_pyfile('config/default_config.py')
     if test_config is None:
         # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config/default_config.py')
         app.config.from_envvar('HAPPYMOVIE_SETTINGS')
         # print(app.config)
     else:
         # load the test config if passed in
-        app.config.from_mapping(test_config)
+        app.config.from_pyfile(test_config)
 
     from .models import db
     db.init_app(app)

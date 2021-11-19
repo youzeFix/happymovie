@@ -356,7 +356,9 @@
         }, {
           value: '恐怖',
           label: '恐怖'
-        }]
+        }],
+        remote_starring: [],
+        remote_genre: []
       }
     },
     computed: {
@@ -377,6 +379,12 @@
     },
 
     methods: {
+      load_remote_starring(){
+
+      },
+      load_remote_genre(){
+
+      },
       tableListFormatter(row, column, cellValue){
         if(cellValue){
           return cellValue.join("/")

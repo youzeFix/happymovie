@@ -20,10 +20,20 @@ services:
     image: happymovie-server
     ports: 
       - "5000:80"
-    volumes:
-      - "dbdata:/app/instance"
     networks:
       - happymovie-net
 
+  happymovie-db:
+    container_name: happymovie-db
+    image: mysql:8.0.27
+    volumes:
+      - "happymovie-data:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: happymovie1234
+      MYSQL_DATABASE: happymovie
+    networks:
+      - happymovie-net
+
+
 volumes:
-  dbdata:
+  happymovie-data:

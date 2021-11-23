@@ -24,6 +24,7 @@ python -m unittest test.test_pick_algo.TestPickAlgoMethods.test_get_maximized_pl
 ```powershell
 $env:FLASK_APP = "server"
 $env:FLASK_ENV = "development"
+$env:HAPPYMOVIE_SETTINGS = 'config/development_config.py'
 flask run
 ```
 
@@ -61,6 +62,12 @@ docker build . -t happymovie-web
 
 ```sh
 docker run -d --name happymovie-web --network happymovie-net --network-alias happymovie-web -p 8080:80 happymovie-web
+```
+
+### 连接到mysql数据库
+
+```sh
+docker run -it --network happymovie-net --rm mysql mysql -hhappymovie-db -uroot -p
 ```
 
 ## Docker-compose

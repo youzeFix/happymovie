@@ -16,7 +16,7 @@
           class="inline-input search-input"
           prefix-icon="el-icon-search"
           v-model="search_input"
-          value-key="movie_name"
+          value-key="name"
           :fetch-suggestions="querySearch"
           placeholder="请输入电影名称"
           :trigger-on-focus="false"
@@ -40,7 +40,7 @@
         </el-table-column>
 
         <el-table-column
-        property="movie_name"
+        property="name"
         label="电影名称"
         header-align="center">
         </el-table-column>
@@ -60,20 +60,20 @@
         </el-table-column>
 
         <el-table-column
-        property="movie_runtime"
+        property="runtime"
         label="电影时长"
         width="80"
         header-align="center">
         </el-table-column>
         <el-table-column
-        property="movie_rating"
+        property="rating"
         label="电影评分"
         width="80"
         header-align="center"
         align="center">
         </el-table-column>
         <el-table-column
-        property="movie_likability"
+        property="likability"
         label="喜爱程度"
         width="80"
         header-align="center"
@@ -120,7 +120,7 @@
     <el-form :model="movie_form" v-loading="dialogEditLoading">
 
         <el-form-item label="电影名称">
-        <el-input v-model="movie_form.movie_name" autocomplete="off" disabled></el-input>
+        <el-input v-model="movie_form.name" autocomplete="off" disabled></el-input>
         </el-form-item>
 
         <el-form-item label="主演">
@@ -128,15 +128,17 @@
             v-model="movie_form.starring"
             multiple
             filterable
+            remote
             allow-create
-            default-first-option
             :multiple-limit="5"
-            placeholder="请输入主演演员">
+            placeholder="请输入主演演员"
+            :remote-method="remoteStarringMethod"
+            :loading="remoteStarringLoading">
             <el-option
-              v-for="item in starring_demos"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in remote_starring"
+              :key="item.id"
+              :label="item.name"
+              :value="item.name">
             </el-option>
           </el-select>
         </el-form-item>
@@ -146,34 +148,36 @@
             v-model="movie_form.genre"
             multiple
             filterable
+            remote
             allow-create
-            default-first-option
             :multiple-limit="6"
-            placeholder="请输入电影类型">
+            placeholder="请输入电影类型"
+            :remote-method="remoteGenreMethod"
+            :loading="remoteGenreLoading">
             <el-option
-              v-for="item in genre_demos"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in remote_genre"
+              :key="item.id"
+              :label="item.genre"
+              :value="item.genre">
             </el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="电影时长">
-        <el-input-number v-model="movie_form.movie_runtime" controls-position="right" :min="1" :max="1000" disabled></el-input-number>
+        <el-input-number v-model="movie_form.runtime" controls-position="right" :min="1" :max="1000" disabled></el-input-number>
         分钟
         </el-form-item>
 
         <el-form-item label="电影评分">
-        <el-input-number v-model="movie_form.movie_rating" controls-position="right" :precision="1" :step="0.1" :min="0" :max="10" disabled></el-input-number>
+        <el-input-number v-model="movie_form.rating" controls-position="right" :precision="1" :step="0.1" :min="0" :max="10" disabled></el-input-number>
         </el-form-item>
 
         <el-form-item label="喜爱程度">
-        <el-input-number v-model="movie_form.movie_likability" controls-position="right" :min="0" :max="10"></el-input-number>
+        <el-input-number v-model="movie_form.likability" controls-position="right" :min="0" :max="10"></el-input-number>
         </el-form-item>
 
         <el-form-item label="是否看过">
-        <el-switch v-model="movie_form.have_seen" active-value="1" inactive-value="0"></el-switch>
+        <el-switch v-model="movie_form.have_seen"></el-switch>
         </el-form-item>
 
         <el-form-item label="创建时间">
@@ -198,8 +202,8 @@
 
     <el-dialog title="新增电影" :visible.sync="dialogAddFormVisible">
     <el-form :model="movie_form" :rules="add_dialog_rules" v-loading="dialogAddLoading" ref="movie_form">
-        <el-form-item label="电影名称" prop='movie_name'>
-        <el-input v-model="movie_form.movie_name" autocomplete="off"></el-input>
+        <el-form-item label="电影名称" prop='name'>
+        <el-input v-model="movie_form.name" autocomplete="off"></el-input>
         </el-form-item>
 
         <el-form-item label="主演">
@@ -207,15 +211,17 @@
             v-model="movie_form.starring"
             multiple
             filterable
+            remote
             allow-create
-            default-first-option
             :multiple-limit="5"
-            placeholder="请输入主演演员">
+            placeholder="请输入主演演员"
+            :remote-method="remoteStarringMethod"
+            :loading="remoteStarringLoading">
             <el-option
-              v-for="item in starring_demos"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in remote_starring"
+              :key="item.id"
+              :label="item.name"
+              :value="item.name">
             </el-option>
           </el-select>
         </el-form-item>
@@ -225,34 +231,36 @@
             v-model="movie_form.genre"
             multiple
             filterable
+            remote
             allow-create
-            default-first-option
             :multiple-limit="6"
-            placeholder="请输入电影类型">
+            placeholder="请输入电影类型"
+            :remote-method="remoteGenreMethod"
+            :loading="remoteGenreLoading">
             <el-option
-              v-for="item in genre_demos"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in remote_genre"
+              :key="item.id"
+              :label="item.genre"
+              :value="item.genre">
             </el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="电影时长">
-        <el-input-number v-model="movie_form.movie_runtime" controls-position="right" :min="1" :max="1000"></el-input-number>
+        <el-input-number v-model="movie_form.runtime" controls-position="right" :min="1" :max="1000"></el-input-number>
         分钟
         </el-form-item>
 
         <el-form-item label="电影评分">
-        <el-input-number v-model="movie_form.movie_rating" controls-position="right" :precision="1" :step="0.1" :min="0" :max="10"></el-input-number>
+        <el-input-number v-model="movie_form.rating" controls-position="right" :precision="1" :step="0.1" :min="0" :max="10"></el-input-number>
         </el-form-item>
 
         <el-form-item label="喜爱程度">
-        <el-input-number v-model="movie_form.movie_likability" controls-position="right" :min="0" :max="10"></el-input-number>
+        <el-input-number v-model="movie_form.likability" controls-position="right" :min="0" :max="10"></el-input-number>
         </el-form-item>
 
         <el-form-item label="是否看过">
-        <el-switch v-model="movie_form.have_seen" active-value="1" inactive-value="0"></el-switch>
+        <el-switch v-model="movie_form.have_seen"></el-switch>
         </el-form-item>
 
         <el-form-item label="创建时间">
@@ -314,13 +322,13 @@
         dialogEditFormVisible: false,
         dialogAddFormVisible: false,
         movie_form: {
-            movie_id: 0,
-            movie_name: '',
+            id: 0,
+            name: '',
             starring:[],
             genre:[],
-            movie_runtime: '',
-            movie_rating: '',
-            movie_likability: '',
+            runtime: '',
+            rating: '',
+            likability: '',
             have_seen: '',
             create_time: '',
             comment: ''
@@ -328,7 +336,7 @@
         dialogEditLoading: false,
         dialogAddLoading: false,
         add_dialog_rules: {
-          movie_name: [
+          name: [
             {required: true, message:'请输入电影名称', trigger: 'blur'}
           ]
         },
@@ -337,26 +345,10 @@
         currentPage: 1,
         pageSize: 11,
         search_input: '',
-        starring_demos: [{
-          value: '刘德华',
-          label: '刘德华'
-        }, {
-          value: '周润发',
-          label: '周润发'
-        }, {
-          value: '肖央',
-          label: '肖央'
-        }],
-        genre_demos: [{
-          value: '剧情',
-          label: '剧情'
-        }, {
-          value: '动作',
-          label: '动作'
-        }, {
-          value: '恐怖',
-          label: '恐怖'
-        }]
+        remote_starring: [],
+        remote_genre: [],
+        remoteStarringLoading: false,
+        remoteGenreLoading: false
       }
     },
     computed: {
@@ -377,15 +369,64 @@
     },
 
     methods: {
+      remoteStarringMethod(query){
+        if (query !== '') {
+          this.remoteStarringLoading = true;
+          let that = this;
+          this.$axios.get('/movie/starrings', {params: {filter: query}})
+          .then(function(response){
+            let data = response.data
+            if(data['statusCode'] == 0){
+              that.remote_starring = data['data']
+            }else{
+              that.remote_starring = []
+            }
+          })
+          .catch(function(error){
+            console.log(error)
+          })
+          .then(function(){
+            that.remoteStarringLoading = false
+          })
+          
+        } else {
+          this.remote_starring = [];
+        }
+      },
+      remoteGenreMethod(query){
+        if (query !== '') {
+          this.remoteGenreLoading = true;
+          let that = this
+          this.$axios.get('/movie/genres', {params: {filter: query}})
+          .then(function(response){
+            console.log(response)
+            let data = response.data
+            if(data['statusCode'] == 0){
+              that.remote_genre = data['data']
+            }else{
+              that.remote_genre = []
+            }
+          })
+          .catch(function(error){
+            console.log(error)
+          })
+          .then(function(){
+            that.remoteGenreLoading = false
+          })
+          
+        } else {
+          this.remote_genre = [];
+        }
+      },
       tableListFormatter(row, column, cellValue){
         if(cellValue){
           return cellValue.join("/")
         }
       },
       haveSeenFormatter(row, column, cellValue){
-        if(cellValue == 1){
+        if(cellValue == true){
           return '是'
-        }else if(cellValue == 0){
+        }else if(cellValue == false){
           return '否'
         }
       },
@@ -399,7 +440,7 @@
       createSearchFilter(queryString) {
         return (movie) => {
           // console.log(movie.movie_name)
-          return (movie.movie_name.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
+          return (movie.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
         };
       },
       handleSearchInputSelect(item) {
@@ -544,14 +585,14 @@
           }
           else
           {
-            this.movie_form.movie_id = this.currentRow.id;
-            this.movie_form.movie_name = this.currentRow.movie_name;
+            this.movie_form.id = this.currentRow.id;
+            this.movie_form.name = this.currentRow.name;
             this.movie_form.starring = this.currentRow.starring;
             this.movie_form.genre = this.currentRow.genre;
-            this.movie_form.movie_runtime = this.currentRow.movie_runtime;
-            this.movie_form.movie_rating = this.currentRow.movie_rating;
-            this.movie_form.movie_likability = this.currentRow.movie_likability;
-            this.movie_form.have_seen = this.currentRow.have_seen + '';
+            this.movie_form.runtime = this.currentRow.runtime;
+            this.movie_form.rating = this.currentRow.rating;
+            this.movie_form.likability = this.currentRow.likability;
+            this.movie_form.have_seen = this.currentRow.have_seen;
             this.movie_form.create_time = this.currentRow.create_time;
             this.movie_form.comment = this.currentRow.comment;
             this.movie_copy = Object.assign({}, this.movie_form);
@@ -571,7 +612,7 @@
         if(movie_form_changed){
           console.log('movie_form is changed');
           if(Object.keys(prop_diff).length){
-            prop_diff['id'] = this.movie_copy.movie_id;
+            prop_diff['id'] = this.movie_copy.id;
             const headerJSON = {
                 "Content-Type": "application/json"
             };
@@ -607,7 +648,7 @@
             })
           }
         }else{
-          console.log('movie not change'+this.movie_form.movie_likability+this.movie_copy.movie_likability);
+          console.log('movie not change'+this.movie_form.likability+this.movie_copy.likability);
           this.dialogEditFormVisible = false;
         }
 
@@ -623,7 +664,6 @@
         }
         Object.keys(this.movie_form).forEach(key => this.movie_form[key] = '');
         this.movie_form.have_seen = 0;
-        this.movie_form.create_time = "2021-10-3 11:17:53";
         this.dialogAddFormVisible = true;
       },
       addDialogOk(){
@@ -639,12 +679,12 @@
         let that = this;
         this.dialogAddLoading = true;
         this.$axios.post('/movie/', {
-          'movie_name': this.movie_form.movie_name,
+          'name': this.movie_form.name,
           'starring': this.movie_form.starring.map(function(item) { return item.trim(); }),
           'genre': this.movie_form.genre.map(function(item) { return item.trim(); }),
-          'movie_runtime': this.movie_form.movie_runtime,
-          'movie_rating': this.movie_form.movie_rating,
-          'movie_likability': this.movie_form.movie_likability,
+          'runtime': this.movie_form.runtime,
+          'rating': this.movie_form.rating,
+          'likability': this.movie_form.likability,
           'have_seen': this.movie_form.have_seen,
           'create_time': this.movie_form.create_time,
           'comment': this.movie_form.comment

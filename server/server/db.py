@@ -1,240 +1,129 @@
-import sqlite3
-
-import click
-from flask import current_app, g
-from flask.app import Flask
-from flask.cli import with_appcontext
-import pathlib
-from typing import Tuple, List
+from .models import db, User, Movie, Starring, Genre
 import pandas
 import datetime
-from .utils import parse_movies_excel
+import logging
 
-def adapt_list(l: List):
-    return ';'.join(l)
+logger = logging.getLogger(__name__)
 
-def convert_list(s):
-    return s.decode('utf-8').split(';')
+def query_user_by_username(username:str) -> User:
+    res = User.query.filter_by(username=username).first()
+    return res
 
-sqlite3.register_adapter(list, adapt_list)
-sqlite3.register_converter('list', convert_list)
+def insert_user(username:str, password:str, nickname:str=None) -> int:
+    user = ''
+    if nickname != None or nickname != '':
+        user = User(nickname=nickname, username=username, password=password)
+    else:
+        user = User(username=username, password=password)
+    db.session.add(user)
+    db.session.commit()
+    return user.id
 
-def get_db():
-    if 'db' not in g:
-        g.db = DB()
+def query_user_by_id(id:int) -> User:
+    res = User.query.get(id)
+    return res
 
-    return g.db
+def insert_movie_df_by_userid(movie_df:pandas.DataFrame, creator_id:int):
+    for _, row in movie_df.iterrows():
+        param_dict = {k:row[k] for k in movie_df.columns}
+        insert_movie_by_userid(**param_dict, creator_id=creator_id)
 
-def close_db(e=None):
-    db = g.pop('db', None)
+def query_starring(name:str) -> Starring:
+    if name is not None:
+        res = Starring.query.filter_by(name=name).first()
+        return res
+    return None
 
-    if db is not None:
-        db.close()
+def query_starring_by_filter(contains:str) -> list[Starring]:
+    res = []
+    if contains is not None:
+        res = Starring.query.filter(Starring.name.contains(contains)).all()
+    return res
 
-def init_db():
-    db = get_db()
+def query_all_starring() -> list[Starring]:
+    return Starring.query.all()
 
-    with current_app.open_resource('schema.sql') as f:
-        db._db.executescript(f.read().decode('utf8'))
+def query_genre(genre:str) -> Genre:
+    if genre is not None:
+        res = Genre.query.filter_by(genre=genre).first()
+        return res
+    return None
 
-class DB:
+def query_genre_by_filter(contains:str) -> list[Genre]:
+    res = []
+    if contains is not None:
+        res = Genre.query.filter(Genre.genre.contains(contains)).all()
+    return res
 
-    def __init__(self) -> None:
-        # auto init db
-        if pathlib.Path(current_app.config['DATABASE']).exists() is False and current_app.config['AUTO_INIT_DB']:
-            current_app.logger.info('auto init db')
-            self._db = sqlite3.connect(
-                current_app.config['DATABASE'],
-                detect_types=sqlite3.PARSE_DECLTYPES
-            )
-            self._db.row_factory = sqlite3.Row
-            with current_app.open_resource('schema.sql') as f:
-                self._db.executescript(f.read().decode('utf8'))
+def query_all_genre() -> list[Genre]:
+    return Genre.query.all()
+
+def turn_starring_list(starrings:list[str]) -> list[Starring]:
+    res = []
+    for s in starrings:
+        temp = query_starring(s)
+        if temp is None:
+            res.append(Starring(name=s))
         else:
-            self._db = sqlite3.connect(
-                current_app.config['DATABASE'],
-                detect_types=sqlite3.PARSE_DECLTYPES
-            )
-            self._db.row_factory = sqlite3.Row
+            res.append(temp)
+    return res
 
-    def close(self):
-        self._db.close()
+def turn_genre_list(genres:list[str]) -> list[Genre]:
+    res = []
+    for g in genres:
+        temp = query_genre(g)
+        if temp is None:
+            res.append(Genre(genre=g))
+        else:
+            res.append(temp)
+    return res
 
-    def insert_movie(self, movie_name:str, movie_runtime:int, movie_rating:float, movie_likability:int=1, have_seen:int=0, comment:str=None, create_time:datetime.datetime=None):
-        loc = locals()
-        del loc['self']
-        sql_column = list(loc.keys())
-        if create_time is None:
-            sql_column.remove('create_time')
-        
-        INSERT_MOVIE_STATEMENT = f'''
-        INSERT INTO movies ({','.join(sql_column)}) VALUES ({','.join(['?']*len(sql_column))}) 
-        '''
+def insert_movie_by_userid(name:str, runtime:int, rating:float, creator_id:int, 
+                            starring:list[str]=None, genre:list[str]=None, likability:int=1, 
+                            have_seen:bool=False, comment:str=None, create_time:datetime.datetime=None) -> int:
+    loc = locals()
+    loc['starring'] = turn_starring_list(starring)
+    loc['genre'] = turn_genre_list(genre)
 
-        sql_params = ([loc[key] for key in sql_column])
-        with self._db:
-            self._db.execute(INSERT_MOVIE_STATEMENT, sql_params)
+    movie = Movie(**loc)
 
-    def insert_movie_by_userid(self, movie_name:str, movie_runtime:int, movie_rating:float, creator_id:int, 
-                                starring:list[str]=None, genre:list[str]=None, movie_likability:int=1, 
-                                have_seen:int=0, comment:str=None, create_time:datetime.datetime=None):
-        loc = locals()
-        del loc['self']
-        sql_column = list(loc.keys())
-        if create_time is None:
-            sql_column.remove('create_time')
-        
-        INSERT_MOVIE_STATEMENT = f'''
-        INSERT INTO movies ({','.join(sql_column)}) VALUES ({','.join(['?']*len(sql_column))}) 
-        '''
+    db.session.add(movie)
+    db.session.commit()
+    return movie.id
 
-        sql_params = ([loc[key] for key in sql_column])
-        with self._db:
-            cursor = self._db.cursor()
-            cursor.execute(INSERT_MOVIE_STATEMENT, sql_params)
-            return cursor.lastrowid
+def query_all_movies_by_userid(user_id:int) -> list[Movie]:
+    return Movie.query.filter_by(creator_id=user_id).all()
 
-    def insert_movie_df_by_userid(self, movie_df:pandas.DataFrame, creator_id:int):
-        for _, row in movie_df.iterrows():
-            param_dict = {k:row[k] for k in movie_df.columns}
-            self.insert_movie_by_userid(**param_dict, creator_id=creator_id)
-            
+def query_all_movies_havent_seen_by_userid(user_id:int) -> list[Movie]:
+    return Movie.query.filter_by(have_seen=False, creator_id=user_id).all()
 
-    def query_all_movies(self) -> List[Tuple]:
-        QUERY_ALL_MOVIE_STATEMENT = '''
-        SELECT * FROM movies
-        '''
-        res = []
-        for row in self._db.execute(QUERY_ALL_MOVIE_STATEMENT):
-            res.append(tuple(row))
+def query_movie(id) -> Movie:
+    return Movie.query.get(id)
 
-        return res
+def remove_movie(id):
+    movie = Movie.query.get(id)
+    db.session.delete(movie)
+    db.session.commit()
 
-    def query_all_movies_by_userid(self, user_id:int) -> List:
-        STATEMENT = '''
-        SELECT * FROM movies WHERE creator_id=?
-        '''
-        res = []
-        for row in self._db.execute(STATEMENT, (user_id,)):
-            res.append(row)
+def update_movie(id:int, starring:list[str]=None, genre:list[str]=None, runtime:int=None, rating:float=None, 
+                    likability:int=None, have_seen:int=None, comment:str=None):
+    params = locals()
+    del params['id']
+    sql_params = {k:v for k,v in params.items() if v is not None}
 
-        return res
+    if starring is not None:
+        sql_params['starring'] = turn_starring_list(starring)
+    if genre is not None:
+        sql_params['genre'] = turn_genre_list(genre)
 
-    def query_all_movies_havent_seen(self) -> List[Tuple]:
-        STATEMENT = '''
-        SELECT * FROM movies WHERE have_seen=0
-        '''
-        res = []
-        for row in self._db.execute(STATEMENT):
-            res.append(tuple(row))
-        return res
-
-    def query_all_movies_havent_seen_by_userid(self, user_id:int) -> List[Tuple]:
-        STATEMENT = '''
-        SELECT * FROM movies WHERE have_seen=0 AND creator_id=?
-        '''
-        res = []
-        for row in self._db.execute(STATEMENT, (user_id,)):
-            res.append(row)
-        return res
-
-
-    def query_one_movie_by_id(self, id) -> Tuple:
-        QUERY_ONE_MOVIE_STATEMENT = '''
-        SELECT * FROM movies WHERE id = ?
-        '''
-
-        res = self._db.execute(QUERY_ONE_MOVIE_STATEMENT, (id,)).fetchone()
-
-        return res
-
-    def query_last_insert_row(self) -> Tuple:
-        last_insert_row_id = self._db.execute('SELECT LAST_INSERT_ROWID()').fetchone()[0]
-        print('last insert row id is', last_insert_row_id)
-        return self.query_one_movie_by_id(last_insert_row_id)
-
-    def query_last_insert_row_by_userid(self, user_id:int) -> Tuple:
-        all_movies = self.query_all_movies_by_userid(user_id)
-        return all_movies[-1]
-
-    def remove_movie(self, id):
-        REMOVE_MOVIE_STATEMENT = '''
-        DELETE FROM movies WHERE id = ?
-        '''
-        with self._db:
-            self._db.execute(REMOVE_MOVIE_STATEMENT, (id,))
-
-    def update_movie(self, id:int, starring:list[str]=None, genre:list[str]=None, movie_runtime:int=None, movie_rating:float=None, movie_likability:int=None, have_seen:int=None, comment:str=None):
-        params = locals()
-        del params['id']
-        del params['self']
-        tmp_l = [f"{k}=?" for k,v in params.items() if v is not None]
-        sql_params = ([v for i,v in params.items() if v is not None])
-
-        UPDATE_MOVIE_STATEMENT = f'''
-        UPDATE movies SET {','.join(tmp_l)} WHERE id = ?
-        '''
-        # print(UPDATE_MOVIE_STATEMENT, id, sql_params)
-
-        with self._db:
-            self._db.execute(UPDATE_MOVIE_STATEMENT, (*sql_params, id))
-
-    def query_user_by_username(self, username:str) -> Tuple:
-        STATEMENT = '''
-        SELECT * FROM user WHERE username = ?
-        '''
-        res = self._db.execute(STATEMENT, (username,)).fetchone()
-        return res
-
-    def query_all_users(self) -> List[Tuple]:
-        STATEMENT = '''
-        SELECT * FROM user
-        '''
-        res = []
-        for row in self._db.execute(STATEMENT):
-            res.append(tuple(row))
-        return res
-
-    def query_user_by_id(self, id:int) -> Tuple:
-        STATEMENT = '''
-        SELECT * FROM user WHERE id = ?
-        '''
-        res = self._db.execute(STATEMENT, (id,)).fetchone()
-        return res
-
-    def insert_user(self, username:str, password:str, nickname:str='DearJohn'):
-        STATEMENT = '''
-        INSERT INTO user (username, password, nickname) VALUES (?, ?, ?)
-        '''
-        with self._db:
-            cursor = self._db.cursor()
-            cursor.execute(STATEMENT, (username, password, nickname))
-            return cursor.lastrowid
-
-        
+    movie = Movie.query.get(id)
+    if movie is None:
+        logger.error(f'movie {id} not exist')
+        return
     
-@click.command('init-db')
-@with_appcontext
-def init_db_command():
-    # Clear the existing data and create new tables.
-    init_db()
-    click.echo('Initialized the databases.')
+    for k,v in sql_params.items():
+        setattr(movie, k, v)
 
-@click.command('import-movies')
-@click.option('--filename', default='movies.xlsx', help='xlsx file name to be imported')
-@click.option('--creatorid', 'creator_id', help='creator id')
-@with_appcontext
-def import_movies(filename, creator_id):
-    with current_app.open_resource(filename) as f:
-        data = parse_movies_excel(f)
-
-        db = get_db()
-        # 插入数据库
-        db.insert_movie_df_by_userid(data, creator_id)
-
-        print(db.query_all_movies())
-
-def init_app(app:Flask):
-    app.teardown_appcontext(close_db)
-    app.cli.add_command(init_db_command)
-    app.cli.add_command(import_movies)
+    db.session.add(movie)
+    db.session.commit()
+    

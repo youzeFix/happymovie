@@ -29,14 +29,30 @@ def insert_movie_df_by_userid(movie_df:pandas.DataFrame, creator_id:int):
         insert_movie_by_userid(**param_dict, creator_id=creator_id)
 
 def query_starring(name:str) -> Starring:
-    res = Starring.query.filter_by(name=name).first()
+    if name is not None:
+        res = Starring.query.filter_by(name=name).first()
+        return res
+    return None
+
+def query_starring_by_filter(contains:str) -> list[Starring]:
+    res = []
+    if contains is not None:
+        res = Starring.query.filter(Starring.name.contains(contains)).all()
     return res
 
 def query_all_starring() -> list[Starring]:
     return Starring.query.all()
 
 def query_genre(genre:str) -> Genre:
-    res = Genre.query.filter_by(genre=genre).first()
+    if genre is not None:
+        res = Genre.query.filter_by(genre=genre).first()
+        return res
+    return None
+
+def query_genre_by_filter(contains:str) -> list[Genre]:
+    res = []
+    if contains is not None:
+        res = Genre.query.filter(Genre.genre.contains(contains)).all()
     return res
 
 def query_all_genre() -> list[Genre]:

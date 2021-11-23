@@ -55,6 +55,20 @@ class TestDBMethods(unittest.TestCase):
             for r in res:
                 print(r)
 
+    def test_query_starrings_by_filter(self):
+        app = create_app(test_config)
+        with app.app_context():
+            res = db.query_starring_by_filter('刘')
+            for r in res:
+                print(r, r.name)
+
+    def test_query_genre_by_filter(self):
+        app = create_app(test_config)
+        with app.app_context():
+            res = db.query_genre_by_filter('情')
+            for r in res:
+                print(r, r.genre)
+
 
 if __name__ == "__main__":
     unittest.main()

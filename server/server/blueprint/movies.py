@@ -203,8 +203,13 @@ def export_movies_data():
 
 @bp.route('/starrings', methods=['GET'])
 @login_required
-def get_all_starrings():
-    starrings = db.query_all_starring()
+def get_starrings():
+    filter_args = request.args.get('filter')
+    starrings = []
+    if filter_args is None:
+        starrings = db.query_all_starring()
+    else:
+        starrings = db.query_starring_by_filter(filter_args)
     res = []
     if starrings:
         keys = starrings[0].field_list
@@ -217,9 +222,15 @@ def get_all_starrings():
     return data
 
 @bp.route('/genres', methods=['GET'])
-# @login_required
-def get_all_genres():
-    genres = db.query_all_genre()
+@login_required
+def get_genres():
+    filter_args = request.args.get('filter')
+    genres = []
+    if filter_args is None:
+        genres = db.query_all_genre()
+    else:
+        genres = db.query_genre_by_filter(filter_args)
+    
     res = []
     if genres:
         keys = genres[0].field_list

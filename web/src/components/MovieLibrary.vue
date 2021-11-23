@@ -128,15 +128,17 @@
             v-model="movie_form.starring"
             multiple
             filterable
+            remote
             allow-create
-            default-first-option
             :multiple-limit="5"
-            placeholder="请输入主演演员">
+            placeholder="请输入主演演员"
+            :remote-method="remoteStarringMethod"
+            :loading="remoteStarringLoading">
             <el-option
-              v-for="item in starring_demos"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in remote_starring"
+              :key="item.id"
+              :label="item.name"
+              :value="item.name">
             </el-option>
           </el-select>
         </el-form-item>
@@ -146,15 +148,17 @@
             v-model="movie_form.genre"
             multiple
             filterable
+            remote
             allow-create
-            default-first-option
             :multiple-limit="6"
-            placeholder="请输入电影类型">
+            placeholder="请输入电影类型"
+            :remote-method="remoteGenreMethod"
+            :loading="remoteGenreLoading">
             <el-option
-              v-for="item in genre_demos"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in remote_genre"
+              :key="item.id"
+              :label="item.genre"
+              :value="item.genre">
             </el-option>
           </el-select>
         </el-form-item>
@@ -207,15 +211,17 @@
             v-model="movie_form.starring"
             multiple
             filterable
+            remote
             allow-create
-            default-first-option
             :multiple-limit="5"
-            placeholder="请输入主演演员">
+            placeholder="请输入主演演员"
+            :remote-method="remoteStarringMethod"
+            :loading="remoteStarringLoading">
             <el-option
-              v-for="item in starring_demos"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in remote_starring"
+              :key="item.id"
+              :label="item.name"
+              :value="item.name">
             </el-option>
           </el-select>
         </el-form-item>
@@ -225,15 +231,17 @@
             v-model="movie_form.genre"
             multiple
             filterable
+            remote
             allow-create
-            default-first-option
             :multiple-limit="6"
-            placeholder="请输入电影类型">
+            placeholder="请输入电影类型"
+            :remote-method="remoteGenreMethod"
+            :loading="remoteGenreLoading">
             <el-option
-              v-for="item in genre_demos"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in remote_genre"
+              :key="item.id"
+              :label="item.genre"
+              :value="item.genre">
             </el-option>
           </el-select>
         </el-form-item>
@@ -337,28 +345,10 @@
         currentPage: 1,
         pageSize: 11,
         search_input: '',
-        starring_demos: [{
-          value: '刘德华',
-          label: '刘德华'
-        }, {
-          value: '周润发',
-          label: '周润发'
-        }, {
-          value: '肖央',
-          label: '肖央'
-        }],
-        genre_demos: [{
-          value: '剧情',
-          label: '剧情'
-        }, {
-          value: '动作',
-          label: '动作'
-        }, {
-          value: '恐怖',
-          label: '恐怖'
-        }],
         remote_starring: [],
-        remote_genre: []
+        remote_genre: [],
+        remoteStarringLoading: false,
+        remoteGenreLoading: false
       }
     },
     computed: {
@@ -379,11 +369,54 @@
     },
 
     methods: {
-      load_remote_starring(){
-
+      remoteStarringMethod(query){
+        if (query !== '') {
+          this.remoteStarringLoading = true;
+          let that = this;
+          this.$axios.get('/movie/starrings', {params: {filter: query}})
+          .then(function(response){
+            let data = response.data
+            if(data['statusCode'] == 0){
+              that.remote_starring = data['data']
+            }else{
+              that.remote_starring = []
+            }
+          })
+          .catch(function(error){
+            console.log(error)
+          })
+          .then(function(){
+            that.remoteStarringLoading = false
+          })
+          
+        } else {
+          this.remote_starring = [];
+        }
       },
-      load_remote_genre(){
-
+      remoteGenreMethod(query){
+        if (query !== '') {
+          this.remoteGenreLoading = true;
+          let that = this
+          this.$axios.get('/movie/genres', {params: {filter: query}})
+          .then(function(response){
+            console.log(response)
+            let data = response.data
+            if(data['statusCode'] == 0){
+              that.remote_genre = data['data']
+            }else{
+              that.remote_genre = []
+            }
+          })
+          .catch(function(error){
+            console.log(error)
+          })
+          .then(function(){
+            that.remoteGenreLoading = false
+          })
+          
+        } else {
+          this.remote_genre = [];
+        }
       },
       tableListFormatter(row, column, cellValue){
         if(cellValue){

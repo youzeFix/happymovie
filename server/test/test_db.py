@@ -1,6 +1,7 @@
 import unittest
 from server import create_app
 import server.db as db
+from server.db import RunningTime
 import pprint
 
 test_config = 'config/development_config.py'
@@ -32,21 +33,19 @@ class TestDBMethods(unittest.TestCase):
             print(dict(res))
 
     def test_insert_user(self):
-        app = create_app()
+        app = create_app(test_config)
         with app.app_context():
             res = db.insert_user('usiel3', '123456')
             print(res)
-            res = db.query_all_users()
-            print(res)
 
     def test_insert_movie(self):
-        app = create_app()
+        app = create_app(test_config)
         with app.app_context():
-            res = db.insert_movie_by_userid('movie1111', '100', '9.6', 1, ['周杰伦', '林俊杰'], ['genre1', 'genre2'])
+            db.insert_movie('movie111', [RunningTime('local', 111)], 4.6)
             # print(res)
-            res = db.query_all_movies_by_userid(1)
-            for r in res:
-                print(r['starring'])
+            # res = db.query_all_movies_by_userid(1)
+            # for r in res:
+            #     print(r['starring'])
 
     def test_query_all_starrings(self):
         app = create_app(test_config)
@@ -68,6 +67,11 @@ class TestDBMethods(unittest.TestCase):
             res = db.query_genre_by_filter('情')
             for r in res:
                 print(r, r.genre)
+
+    def test_insert_user_movie_map(self):
+        app = create_app(test_config)
+        with app.app_context():
+            db.insert_user_movie_map(1,1)
 
 
 if __name__ == "__main__":

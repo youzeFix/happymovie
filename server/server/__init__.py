@@ -37,6 +37,7 @@ def create_app(test_config=None):
     db.init_app(app)
     with app.app_context():
         db.create_all()
+        # db.drop_all()
 
     from .blueprint import movies, auth, files
     app.register_blueprint(movies.bp)

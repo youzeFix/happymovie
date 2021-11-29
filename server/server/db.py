@@ -1,4 +1,4 @@
-from .models import db, User, Movie, Starring, Genre
+from .models import db, User, Movie, Starring, Genre, ReleaseDate, RunningTime, user_movie_table
 import pandas
 import datetime
 import logging
@@ -78,18 +78,16 @@ def turn_genre_list(genres:list[str]) -> list[Genre]:
             res.append(temp)
     return res
 
-def insert_movie_by_userid(name:str, runtime:int, rating:float, creator_id:int, 
-                            starring:list[str]=None, genre:list[str]=None, likability:int=1, 
-                            have_seen:bool=False, comment:str=None, create_time:datetime.datetime=None) -> int:
+def insert_user_movie_map(user_id:int, movie_id:int, likability:int=1, have_seen:bool=False, comment:str=None, 
+                        create_time:datetime.datetime=None):
     loc = locals()
-    loc['starring'] = turn_starring_list(starring)
-    loc['genre'] = turn_genre_list(genre)
+    if create_time == None:
+        del loc['create_time']
+    ins = user_movie_table.insert()
+    ins = ins.values(**loc)
+    res = db.engine.connect().execute(ins)
+    print('res' + res)
 
-    movie = Movie(**loc)
-
-    db.session.add(movie)
-    db.session.commit()
-    return movie.id
 
 def query_all_movies_by_userid(user_id:int) -> list[Movie]:
     return Movie.query.filter_by(creator_id=user_id).all()
@@ -127,3 +125,23 @@ def update_movie(id:int, starring:list[str]=None, genre:list[str]=None, runtime:
     db.session.add(movie)
     db.session.commit()
     
+def insert_movie(name:str, runtime:list[RunningTime], rating:float, director:list[str]=None, scriptwriter:list[str]=None, 
+                region:str=None, language:list[str]=None, release_date:list[ReleaseDate]=None,  alternate_name:list[str]=None, 
+                imdb:str=None) -> int:
+    loc = locals()
+
+    movie = Movie(**loc)
+
+    db.session.add(movie)
+    db.session.commit()
+    return movie.id
+
+def query_movie_by_name(name:str) -> Movie:
+    res = Movie.query.filter_by(name=name).first()
+    return res
+
+def query_movie_contains_name(name:str) -> list[Movie]:
+    res = []
+    if name is not None:
+        res = Movie.query.filter(Movie.name.contains(name)).all()
+    return res

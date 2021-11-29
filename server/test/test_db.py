@@ -73,6 +73,16 @@ class TestDBMethods(unittest.TestCase):
         with app.app_context():
             db.insert_user_movie_map(1,1)
 
+    def test_update_user_movie_map(self):
+        app = create_app(test_config)
+        with app.app_context():
+            db.update_user_movie_map(1,1,likability=7, have_seen=True, comment='来自豆瓣')
+
+    def test_delete_user_movie_map(self):
+        app = create_app(test_config)
+        with app.app_context():
+            db.delete_user_movie_map(1,1)
+
 
 if __name__ == "__main__":
     unittest.main()

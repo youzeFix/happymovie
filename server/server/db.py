@@ -85,9 +85,25 @@ def insert_user_movie_map(user_id:int, movie_id:int, likability:int=1, have_seen
         del loc['create_time']
     ins = user_movie_table.insert()
     ins = ins.values(**loc)
-    res = db.engine.connect().execute(ins)
-    print('res' + res)
+    db.engine.connect().execute(ins)
 
+def update_user_movie_map(user_id:int, movie_id:int, likability:int=None, have_seen:bool=None, comment:str=None, 
+                        create_time:datetime.datetime=None):
+    params = locals()
+    del params['user_id']
+    del params['movie_id']
+    sql_params = {k:v for k,v in params.items() if v is not None}
+
+    upd = user_movie_table.update()
+    upd = upd.values(**sql_params)
+    
+    db.engine.connect().execute(upd)
+
+def delete_user_movie_map(user_id:int, movie_id:int):
+    del_ins = user_movie_table.delete()
+    del_ins = del_ins.values(user_id=user_id, movie_id=movie_id)
+
+    db.engine.connect().execute(del_ins)
 
 def query_all_movies_by_userid(user_id:int) -> list[Movie]:
     return Movie.query.filter_by(creator_id=user_id).all()

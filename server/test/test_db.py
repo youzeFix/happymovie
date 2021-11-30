@@ -8,11 +8,13 @@ test_config = 'config/development_config.py'
 
 class TestDBMethods(unittest.TestCase):
 
-    # def test_query_all_movies(self):
-    #     app = create_app()
-    #     with app.app_context():
-    #         res = db.query_all_movies()
-    #         pprint.pprint(res)
+    def test_query_all_movies(self):
+        app = create_app(test_config)
+        with app.app_context():
+            res = db.query_all_movies()
+            # pprint.pprint(res)
+            for r in res:
+                print(r, r.runtime)
 
     def test_query_all_movies_by_userid(self):
         app = create_app(test_config)
@@ -41,7 +43,7 @@ class TestDBMethods(unittest.TestCase):
     def test_insert_movie(self):
         app = create_app(test_config)
         with app.app_context():
-            db.insert_movie('movie111', [RunningTime('local', 111)], 4.6)
+            db.insert_movie('movi222', [RunningTime('local', 222)], 8.6)
             # print(res)
             # res = db.query_all_movies_by_userid(1)
             # for r in res:
@@ -71,7 +73,7 @@ class TestDBMethods(unittest.TestCase):
     def test_insert_user_movie_map(self):
         app = create_app(test_config)
         with app.app_context():
-            db.insert_user_movie_map(1,1)
+            db.insert_user_movie_map(1,2)
 
     def test_update_user_movie_map(self):
         app = create_app(test_config)
@@ -81,7 +83,14 @@ class TestDBMethods(unittest.TestCase):
     def test_delete_user_movie_map(self):
         app = create_app(test_config)
         with app.app_context():
-            db.delete_user_movie_map(1,1)
+            db.delete_user_movie_map(1,2)
+
+    def test_query_user_movies_map(self):
+        app = create_app(test_config)
+        with app.app_context():
+            res = db.query_user_movies_map(1)
+            print(res)
+            print(res[0].movie_id)
 
 
 if __name__ == "__main__":

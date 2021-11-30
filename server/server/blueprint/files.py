@@ -1,7 +1,7 @@
 from flask import current_app, g, request, send_from_directory, Blueprint
 import logging
 from .auth import login_required
-from ..utils import parse_movies_excel
+from ..utils import parse_movies_excel, match_movie
 from .. import db
 import pathlib
 
@@ -35,7 +35,20 @@ def upload_file():
         if data is None:
             logger.error('excel parse error')
             return {'statusCode': -1, 'message': 'file parse error'}
-        db.insert_movie_df_by_userid(data, g.user.id)
+        
+        for _, row in data.iterrows():
+            # 先去库中匹配电影，若匹配不到则创建一个，movie_id为匹配到的或新创建的movie
+            temp_l = db.query_movie_match_name(row['name'])
+            matcher = match_movie(temp_l, row)
+            movie_id = -1
+            if matcher == None:
+                movie_id = db.insert_movie(row['name'], [db.RunningTime('default', int(row['runtime']))], row['rating'],
+                                            starring=row['starring'], genre=row['genre'])
+            else:
+                movie_id = matcher.id
+
+            db.insert_user_movie_map(g.user.id, movie_id, row['likability'], row['have_seen'], row['comment']) 
+
     return {'statusCode':0, 'message': 'upload success'}
 
 @bp.route('/download/<filename>')

@@ -26,7 +26,7 @@ def query_user_by_id(id:int) -> User:
 def insert_movie_df_by_userid(movie_df:pandas.DataFrame, creator_id:int):
     for _, row in movie_df.iterrows():
         param_dict = {k:row[k] for k in movie_df.columns}
-        insert_movie_by_userid(**param_dict, creator_id=creator_id)
+        insert_movie_by_userid(**param_dict, user_id=creator_id)
 
 def query_starring(name:str) -> Starring:
     if name is not None:
@@ -78,6 +78,16 @@ def turn_genre_list(genres:list[str]) -> list[Genre]:
             res.append(temp)
     return res
 
+def query_user_movie_map(user_id:int, movie_id:int):
+    sel = user_movie_table.select().where(user_movie_table.c.user_id==user_id, user_movie_table.c.movie_id==movie_id)
+    res = db.engine.connect().execute(sel).first()
+    return res
+
+def query_user_movies_map(user_id:int):
+    sel = user_movie_table.select().where(user_movie_table.c.user_id==user_id)
+    res = db.engine.connect().execute(sel).all()
+    return res
+
 def insert_user_movie_map(user_id:int, movie_id:int, likability:int=1, have_seen:bool=False, comment:str=None, 
                         create_time:datetime.datetime=None):
     loc = locals()
@@ -101,12 +111,16 @@ def update_user_movie_map(user_id:int, movie_id:int, likability:int=None, have_s
 
 def delete_user_movie_map(user_id:int, movie_id:int):
     del_ins = user_movie_table.delete()
-    del_ins = del_ins.values(user_id=user_id, movie_id=movie_id)
+    print(del_ins)
+    print(type(del_ins))
+    del_ins = del_ins.where(user_movie_table.c.user_id==user_id, user_movie_table.c.movie_id==movie_id)
 
     db.engine.connect().execute(del_ins)
 
 def query_all_movies_by_userid(user_id:int) -> list[Movie]:
-    return Movie.query.filter_by(creator_id=user_id).all()
+    user = User.query.get(user_id)
+    res = user.movies
+    return res
 
 def query_all_movies_havent_seen_by_userid(user_id:int) -> list[Movie]:
     return Movie.query.filter_by(have_seen=False, creator_id=user_id).all()
@@ -142,9 +156,11 @@ def update_movie(id:int, starring:list[str]=None, genre:list[str]=None, runtime:
     db.session.commit()
     
 def insert_movie(name:str, runtime:list[RunningTime], rating:float, director:list[str]=None, scriptwriter:list[str]=None, 
-                region:str=None, language:list[str]=None, release_date:list[ReleaseDate]=None,  alternate_name:list[str]=None, 
-                imdb:str=None) -> int:
+                starring:list[str]=None, genre:list[str]=None, region:str=None, language:list[str]=None, 
+                release_date:list[ReleaseDate]=None,  alternate_name:list[str]=None, imdb:str=None) -> int:
     loc = locals()
+    loc['starring'] = turn_starring_list(starring)
+    loc['genre'] = turn_genre_list(genre)
 
     movie = Movie(**loc)
 
@@ -156,8 +172,18 @@ def query_movie_by_name(name:str) -> Movie:
     res = Movie.query.filter_by(name=name).first()
     return res
 
+def query_movie_match_name(name:str) -> list[Movie]:
+    '''
+    名称匹配电影，目前直接用包含，后续改用模糊匹配
+    '''
+    return query_movie_contains_name(name)
+
 def query_movie_contains_name(name:str) -> list[Movie]:
     res = []
     if name is not None:
         res = Movie.query.filter(Movie.name.contains(name)).all()
+    return res
+
+def query_all_movies() -> list[Movie]:
+    res = Movie.query.all()
     return res

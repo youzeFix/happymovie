@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('movies', __name__, url_prefix='/movie')
 
 @bp.route('/all', methods=['GET'])
-@login_required
+# @login_required
 def get_all_movies():
-    db_res = db.query_all_movies_by_userid(g.user.id)
+    movies = db.query_all_movies_by_userid(1)
     # print(db_res)
     res = []
     if db_res:

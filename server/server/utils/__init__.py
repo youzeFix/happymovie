@@ -2,8 +2,18 @@ import datetime
 import logging
 import pandas
 import time
+from .. import db
 
 logger = logging.getLogger(__name__)
+
+def match_movie(q:list[db.Movie], row:pandas.Series) -> db.Movie:
+    for m in q:
+        if m.rating != row['rating']:
+            continue
+        for r in m.runtime:
+            if r.running_time == row['runtime']:
+                return m
+    return None
 
 def get_time_string():
     """

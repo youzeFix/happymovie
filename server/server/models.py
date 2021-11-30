@@ -54,6 +54,7 @@ class Genre(db.Model):
     genre = db.Column(db.String(10), unique=True, nullable=False)
 
 class Movie(db.Model):
+    field_list = ['id', 'name', 'starring', 'genre', 'runtime', 'rating', 'likability', 'have_seen', 'comment', 'create_time']
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     # 导演
@@ -78,6 +79,9 @@ class Movie(db.Model):
     rating = db.Column(db.Float, nullable=False)
     # imdb
     imdb = db.Column(db.String(50))
+
+    def __repr__(self):
+        return '<Movie id=%d, name=%r, rating=%f>' % (self.id, self.name, self.rating)
 
 class ReleaseDate(NamedTuple):
     '''

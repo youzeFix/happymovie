@@ -14,12 +14,11 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('movies', __name__, url_prefix='/movie')
 
 @bp.route('/all', methods=['GET'])
-# @login_required
+@login_required
 def get_all_movies():
-    # user_id = g.user.id
-    user_id = 1
+    user_id = g.user.id
+    # user_id = 1
     user_movies_map = db.query_user_movies_map(user_id)
-    # print(db_res)
     res = []
     keys = ['likability', 'have_seen', 'comment', 'create_time']
     movie_keys = ['id', 'name', 'rating']
@@ -88,8 +87,11 @@ def update_one_movie():
         logger.warning('update data does not contain id')
         print(r)
         return {'statusCode': -1, 'message':'update data must contain id'}
+    
+    r['movie_id'] = r['id']
+    del r['id']
 
-    db.update_movie(**r)
+    db.update_user_movie_map(g.user.id, **r)
 
     return {'statusCode': 0, 'message':'update movie success'}
 
@@ -102,7 +104,7 @@ def remove_one_movie():
         logger.warning('id is None!')
         return {'statusCode': -1, 'message':'delete method request id param'}
 
-    db.remove_movie(movie_id)
+    db.delete_user_movie_map(g.user.id, movie_id)
 
     return {'statusCode': 0, 'message':'remove movie success'}
 
@@ -131,21 +133,21 @@ def pick_movie():
 
     def filter_by_starring_and_genre(row):
         for s in starrings:
-            if row.starring is None:
+            if row['starring'] is None:
                 return False
             temp = db.query_starring(s)
             if temp is None:
                 return False
-            elif temp not in row.starring:
+            elif temp not in row['starring']:
                 return False
 
         for g in genres:
-            if row.genre is None:
+            if row['genre'] is None:
                 return False
             temp = db.query_genre(g)
             if temp is None:
                 return False
-            elif temp not in row.genre:
+            elif temp not in row['genre']:
                 return False
         return True
 
@@ -159,9 +161,7 @@ def pick_movie():
         pick_res = pick_movies_by_num(int(data.get('value')), movies_input)
 
     data = []
-    keys = []
-    if pick_res:
-        keys = pick_res[0].field_list
+    keys = ['id', 'name', 'rating', 'starring', 'genre', 'runtime', 'likability', 'have_seen', 'comment', 'create_time']
     for row in pick_res:
         temp = {k:getattr(row, k) for k in keys}
         temp['starring'] = [s.name for s in temp['starring']]
@@ -176,15 +176,13 @@ def pick_movie():
 @login_required
 def export_movies_data():
     userid = g.user.id
-    movies = db.query_all_movies_by_userid(userid)
+    movies = db.query_all_movies_with_userinfo(userid)
     export_filename = ''
     if movies:
-        field_list = movies[0].field_list
+        field_list = ['id', 'name', 'rating', 'starring', 'genre', 'runtime', 'likability', 'have_seen', 'comment', 'create_time']
         movies_input = []
         for m in movies:
-            temp = {k:getattr(m, k) for k in field_list}
-            temp['starring'] = [s.name for s in temp['starring']]
-            temp['genre'] = [g.genre for g in temp['genre']]
+            temp = {k:m.get(k) for k in field_list}
             movies_input.append(temp)
         df = pandas.DataFrame(movies_input, columns=field_list)
         columns_to_drop = ['id']
@@ -196,9 +194,9 @@ def export_movies_data():
                 return '/'.join(m)
             return
         def convert_haveseen(have_seen):
-            if have_seen == 1:
+            if have_seen == True:
                 return '是'
-            elif have_seen == 0:
+            elif have_seen == False:
                 return '否'
             return ''
         df['starring'] = df['starring'].apply(convert_list)

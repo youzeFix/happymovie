@@ -133,7 +133,8 @@
             :multiple-limit="5"
             placeholder="请输入主演演员"
             :remote-method="remoteStarringMethod"
-            :loading="remoteStarringLoading">
+            :loading="remoteStarringLoading"
+            disabled>
             <el-option
               v-for="item in remote_starring"
               :key="item.id"
@@ -153,7 +154,8 @@
             :multiple-limit="6"
             placeholder="请输入电影类型"
             :remote-method="remoteGenreMethod"
-            :loading="remoteGenreLoading">
+            :loading="remoteGenreLoading"
+            disabled>
             <el-option
               v-for="item in remote_genre"
               :key="item.id"

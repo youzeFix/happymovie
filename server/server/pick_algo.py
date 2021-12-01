@@ -2,7 +2,6 @@ from heapq import nlargest, heappush, heappop
 from typing import List
 from dataclasses import dataclass, field
 from bisect import bisect_left
-from .models import Movie as Movie_db
 
 @dataclass(order=True)
 class Movie:
@@ -47,13 +46,13 @@ def get_maximized_pleasure(time_have: int, movies_origin: List[Movie]) -> List[M
     return res
 
 
-def pick_movies_by_time(time_have:int, movies:list[Movie_db]) -> list[Movie_db]:
+def pick_movies_by_time(time_have:int, movies:list[dict]) -> list[dict]:
     movies_input = []
     movies_map = {}
     for m in movies:
         # index, movie_runtime, movie_name, movie_rating*movie_likability
-        movies_input.append(Movie(m.id, m.runtime, m.name, -m.rating*m.likability))
-        movies_map[m.id] = m
+        movies_input.append(Movie(m['id'], m['runtime'], m['name'], -m['rating']*m['likability']))
+        movies_map[m['id']] = m
     pick_output = get_maximized_pleasure(time_have, movies_input)
     res = []
     for m in pick_output:
@@ -67,13 +66,13 @@ def get_maximized_nums(num: int, movies_origin: List[Movie]) -> List[Movie]:
     
     return movies[:num]
 
-def pick_movies_by_num(num:int, movies:List[Movie_db]) -> List[Movie_db]:
+def pick_movies_by_num(num:int, movies:List[dict]) -> List[dict]:
     movies_input = []
     movies_map = {}
     for m in movies:
         # index, movie_runtime, movie_name, movie_rating*movie_likability
-        movies_input.append(Movie(m.id, m.runtime, m.name, -m.rating*m.likability))
-        movies_map[m.id] = m
+        movies_input.append(Movie(m['id'], m['runtime'], m['name'], -m['rating']*m['likability']))
+        movies_map[m['id']] = m
     pick_output = get_maximized_nums(num, movies_input)
     res = []
     for m in pick_output:

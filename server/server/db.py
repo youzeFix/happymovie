@@ -23,11 +23,6 @@ def query_user_by_id(id:int) -> User:
     res = User.query.get(id)
     return res
 
-def insert_movie_df_by_userid(movie_df:pandas.DataFrame, creator_id:int):
-    for _, row in movie_df.iterrows():
-        param_dict = {k:row[k] for k in movie_df.columns}
-        insert_movie_by_userid(**param_dict, user_id=creator_id)
-
 def query_starring(name:str) -> Starring:
     if name is not None:
         res = Starring.query.filter_by(name=name).first()
@@ -104,15 +99,13 @@ def update_user_movie_map(user_id:int, movie_id:int, likability:int=None, have_s
     del params['movie_id']
     sql_params = {k:v for k,v in params.items() if v is not None}
 
-    upd = user_movie_table.update()
+    upd = user_movie_table.update().where(user_movie_table.c.user_id==user_id, user_movie_table.c.movie_id==movie_id)
     upd = upd.values(**sql_params)
     
     db.engine.connect().execute(upd)
 
 def delete_user_movie_map(user_id:int, movie_id:int):
     del_ins = user_movie_table.delete()
-    print(del_ins)
-    print(type(del_ins))
     del_ins = del_ins.where(user_movie_table.c.user_id==user_id, user_movie_table.c.movie_id==movie_id)
 
     db.engine.connect().execute(del_ins)
@@ -122,11 +115,25 @@ def query_all_movies_by_userid(user_id:int) -> list[Movie]:
     res = user.movies
     return res
 
-def query_all_movies_havent_seen_by_userid(user_id:int) -> list[Movie]:
-    return Movie.query.filter_by(have_seen=False, creator_id=user_id).all()
+def query_all_movies_havent_seen_by_userid(user_id:int) -> list[dict]:
+    sel = user_movie_table.select().where(user_movie_table.c.user_id==user_id, user_movie_table.c.have_seen==False)
+    user_movies_map = db.engine.connect().execute(sel).all()
+    res = []
+    for m in user_movies_map:
+        temp = query_movie_with_userinfo(user_id, m.movie_id)
+        res.append(temp)
+    return res
 
 def query_movie(id) -> Movie:
     return Movie.query.get(id)
+
+def query_all_movies_with_userinfo(user_id:int) -> list[dict]:
+    user_movies_map = query_user_movies_map(user_id)
+    res = []
+    for m in user_movies_map:
+        temp = query_movie_with_userinfo(user_id, m.movie_id)
+        res.append(temp)
+    return res
 
 def query_movie_with_userinfo(user_id:int, movie_id:int) -> dict:
     '''
@@ -140,6 +147,7 @@ def query_movie_with_userinfo(user_id:int, movie_id:int) -> dict:
     res['name'] = movie_info.name
     res['starring'] = [s.name for s in movie_info.starring]
     res['genre'] = [g.genre for g in movie_info.genre]
+    res['rating'] = movie_info.rating
     res['runtime'] = get_default_runtime(movie_info.runtime).running_time
     
     res['likability'] = user_movie_map.likability

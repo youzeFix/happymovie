@@ -44,10 +44,14 @@ def upload_file():
             if matcher == None:
                 movie_id = db.insert_movie(row['name'], [db.RunningTime('default', int(row['runtime']))], row['rating'],
                                             starring=row['starring'], genre=row['genre'])
+                logger.info('创建movie' + row['name'])
             else:
                 movie_id = matcher.id
-
-            db.insert_user_movie_map(g.user.id, movie_id, row['likability'], row['have_seen'], row['comment']) 
+            try:
+                db.insert_user_movie_map(g.user.id, movie_id, row['likability'], row['have_seen'], row['comment'])
+            except Exception as e:
+                logger.error('error insert user_movie_map when handle movie' + row['name'])
+                logger.error(e)
 
     return {'statusCode':0, 'message': 'upload success'}
 

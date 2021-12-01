@@ -128,6 +128,27 @@ def query_all_movies_havent_seen_by_userid(user_id:int) -> list[Movie]:
 def query_movie(id) -> Movie:
     return Movie.query.get(id)
 
+def query_movie_with_userinfo(user_id:int, movie_id:int) -> dict:
+    '''
+    return dict: {id, name, starring, genre, rating, runtime, likability, have_seen, comment, create_time}
+    '''
+    from .utils import get_default_runtime
+    user_movie_map = query_user_movie_map(user_id, movie_id)
+    movie_info = query_movie(movie_id)
+    res = {}
+    res['id'] = movie_info.id
+    res['name'] = movie_info.name
+    res['starring'] = [s.name for s in movie_info.starring]
+    res['genre'] = [g.genre for g in movie_info.genre]
+    res['runtime'] = get_default_runtime(movie_info.runtime).running_time
+    
+    res['likability'] = user_movie_map.likability
+    res['have_seen'] = user_movie_map.have_seen
+    res['comment'] = user_movie_map.comment
+    res['create_time'] = user_movie_map.create_time
+    return res
+
+
 def remove_movie(id):
     movie = Movie.query.get(id)
     db.session.delete(movie)

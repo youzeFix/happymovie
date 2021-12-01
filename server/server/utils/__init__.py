@@ -6,7 +6,10 @@ from .. import db
 
 logger = logging.getLogger(__name__)
 
-def match_movie(q:list[db.Movie], row:pandas.Series) -> db.Movie:
+def get_default_runtime(runtimes:list[db.RunningTime]) -> db.RunningTime:
+    return runtimes[0]
+
+def match_movie(q:list[db.Movie], row:dict) -> db.Movie:
     for m in q:
         if m.rating != row['rating']:
             continue

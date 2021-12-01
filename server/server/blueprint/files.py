@@ -39,7 +39,7 @@ def upload_file():
         for _, row in data.iterrows():
             # 先去库中匹配电影，若匹配不到则创建一个，movie_id为匹配到的或新创建的movie
             temp_l = db.query_movie_match_name(row['name'])
-            matcher = match_movie(temp_l, row)
+            matcher = match_movie(temp_l, {'rating': row['rating'], 'runtime': row['runtime']})
             movie_id = -1
             if matcher == None:
                 movie_id = db.insert_movie(row['name'], [db.RunningTime('default', int(row['runtime']))], row['rating'],

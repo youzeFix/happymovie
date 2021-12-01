@@ -1,7 +1,7 @@
 from flask import Blueprint, g, request, current_app
 import json
 import logging
-from ..utils import datetime_to_json, get_time_string
+from ..utils import datetime_to_json, get_time_string, get_default_runtime, match_movie
 import datetime
 from ..pick_algo import pick_movies_by_num, pick_movies_by_time
 from .auth import login_required
@@ -16,15 +16,22 @@ bp = Blueprint('movies', __name__, url_prefix='/movie')
 @bp.route('/all', methods=['GET'])
 # @login_required
 def get_all_movies():
-    movies = db.query_all_movies_by_userid(1)
+    # user_id = g.user.id
+    user_id = 1
+    user_movies_map = db.query_user_movies_map(user_id)
     # print(db_res)
     res = []
-    if db_res:
-        keys = db_res[0].field_list
-        for row in db_res:
+    keys = ['likability', 'have_seen', 'comment', 'create_time']
+    movie_keys = ['id', 'name', 'rating']
+    if user_movies_map:
+        for row in user_movies_map:
             temp = {k:getattr(row, k) for k in keys}
-            temp['starring'] = [s.name for s in temp['starring']]
-            temp['genre'] = [g.genre for g in temp['genre']]
+            movie = db.query_movie(row.movie_id)
+            for key in movie_keys:
+                temp[key] = getattr(movie, key)
+            temp['runtime'] = get_default_runtime(movie.runtime).running_time
+            temp['starring'] = [s.name for s in movie.starring]
+            temp['genre'] = [g.genre for g in movie.genre]
             res.append(temp)
         
     data = {'statusCode':0, 'message':'query success', 'data':res}
@@ -40,22 +47,30 @@ def insert_one_movie():
         logger.warning('req_data is none, may be content-type is not application/json!')
         return {'statusCode': -1, 'message':'req data is not json'}
 
-    temp_params = {key:r.get(key) for key, _ in r.items()}
-    if temp_params.get('create_time') is not None:
+    req_params = {key:r.get(key) for key, _ in r.items()}
+    if req_params.get('create_time') is not None:
         try:
-            temp_params['create_time'] = datetime.datetime.strptime(temp_params.get('create_time'), '%Y-%m-%d %H:%M:%S')
-            print(temp_params['create_time'])
+            req_params['create_time'] = datetime.datetime.strptime(req_params.get('create_time'), '%Y-%m-%d %H:%M:%S')
+            print(req_params['create_time'])
         except Exception as e:
             print(e)
             return {'statusCode': -1, 'message':'date format must match %Y-%m-%d %H:%M:%S'}
 
-    temp_params['creator_id'] = g.user.id
-    insert_id = db.insert_movie_by_userid(**temp_params)
+    user_id = g.user.id
+    # user_id = 1
+    # 先去库中匹配电影，若匹配不到则创建一个，movie_id为匹配到的或新创建的movie
+    temp_l = db.query_movie_match_name(req_params['name'])
+    matcher = match_movie(temp_l, {'rating':req_params['rating'], 'runtime':req_params['runtime']})
+    movie_id = -1
+    if matcher == None:
+        movie_id = db.insert_movie(req_params['name'], [db.RunningTime('default', int(req_params['runtime']))], req_params['rating'],
+                                    starring=req_params['starring'], genre=req_params['genre'])
+    else:
+        movie_id = matcher.id
 
-    row = db.query_movie(insert_id)
-    data = {k:getattr(row, k) for k in row.field_list}
-    data['starring'] = [s.name for s in data['starring']]
-    data['genre'] = [g.genre for g in data['genre']]
+    db.insert_user_movie_map(user_id, movie_id, req_params['likability'], req_params['have_seen'], req_params['comment']) 
+
+    data = db.query_movie_with_userinfo(user_id, movie_id)
 
     res = {'statusCode': 0, 'message':'insert movie success', 'data': data}
 

@@ -49,6 +49,11 @@ class TestDBMethods(unittest.TestCase):
             # for r in res:
             #     print(r['starring'])
 
+    def test_update_movie(self):
+        app = create_app(test_config)
+        with app.app_context():
+            db.update_movie(1, ['actor1', 'actor2'], ['genre1', 'genre2'])
+
     def test_query_all_starrings(self):
         app = create_app(test_config)
         with app.app_context():
@@ -89,7 +94,7 @@ class TestDBMethods(unittest.TestCase):
         app = create_app(test_config)
         with app.app_context():
             res = db.query_user_movies_map(1)
-            print(res)
+            print(type(res[0]))
             print(res[0].movie_id)
 
 

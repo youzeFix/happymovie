@@ -205,7 +205,14 @@
     <el-dialog title="新增电影" :visible.sync="dialogAddFormVisible">
     <el-form :model="movie_form" :rules="add_dialog_rules" v-loading="dialogAddLoading" ref="movie_form">
         <el-form-item label="电影名称" prop='name'>
-        <el-input v-model="movie_form.name" autocomplete="off"></el-input>
+          <el-autocomplete
+            v-model="movie_form.name"
+            :fetch-suggestions="queryMatchMovie"
+            placeholder="请输入电影名称"
+            @select="handleMatchMovieSelect"
+            :trigger-on-focus="false"
+            value-key="name"
+          ></el-autocomplete>
         </el-form-item>
 
         <el-form-item label="主演">
@@ -366,11 +373,33 @@
         }else{
           this.tableData = []
           this.currentPageTableData = []
+          this.search_input = ''
         }
       }
     },
 
     methods: {
+      queryMatchMovie(queryString, cb){
+        this.$axios.get('/movie/movie', {params: {match: queryString}})
+        .then(function(response){
+          if(response.data['statusCode'] == 0){
+            cb(response.data['data'])
+          }else{
+            console.log('get match movie failed!')
+          }
+        })
+        .catch(function(error){
+          console.log(error)
+        })
+      },
+      handleMatchMovieSelect(item){
+        console.log('select item:')
+        console.log(item)
+        this.movie_form.starring = item.starring
+        this.movie_form.genre = item.genre
+        this.movie_form.runtime = item.runtime
+        this.movie_form.rating = item.rating
+      },
       remoteStarringMethod(query){
         if (query !== '') {
           this.remoteStarringLoading = true;

@@ -67,7 +67,7 @@ def insert_one_movie():
     else:
         movie_id = matcher.id
 
-    db.insert_user_movie_map(user_id, movie_id, req_params['likability'], req_params['have_seen'], req_params['comment']) 
+    db.insert_user_movie_map(user_id, movie_id, req_params['likability'], req_params['have_seen'], req_params['comment'], req_params['create_time']) 
 
     data = db.query_movie_with_userinfo(user_id, movie_id)
 
@@ -138,7 +138,7 @@ def pick_movie():
             temp = db.query_starring(s)
             if temp is None:
                 return False
-            elif temp not in row['starring']:
+            elif temp.name not in row['starring']:
                 return False
 
         for g in genres:
@@ -147,7 +147,7 @@ def pick_movie():
             temp = db.query_genre(g)
             if temp is None:
                 return False
-            elif temp not in row['genre']:
+            elif temp.genre not in row['genre']:
                 return False
         return True
 
@@ -160,15 +160,7 @@ def pick_movie():
     elif pick_type == 2:
         pick_res = pick_movies_by_num(int(data.get('value')), movies_input)
 
-    data = []
-    keys = ['id', 'name', 'rating', 'starring', 'genre', 'runtime', 'likability', 'have_seen', 'comment', 'create_time']
-    for row in pick_res:
-        temp = {k:getattr(row, k) for k in keys}
-        temp['starring'] = [s.name for s in temp['starring']]
-        temp['genre'] = [g.genre for g in temp['genre']]
-        data.append(temp)
-
-    res = {'statusCode': 0, 'message':'pick successful', 'data': data}
+    res = {'statusCode': 0, 'message':'pick successful', 'data': pick_res}
 
     return json.dumps(res, default=datetime_to_json, ensure_ascii=False)
     
@@ -252,5 +244,30 @@ def get_genres():
             res.append(temp)
         
     data = {'statusCode':0, 'message':'query success', 'data':res}
+
+    return data
+
+@bp.route('/movie', methods=['GET'])
+@login_required
+def get_match_movie():
+    match_q = request.args.get('match')
+    if match_q is None:
+        logger.warning('match is none, may be content-type is not application/json!')
+        return {'statusCode': -1, 'message':'parameter match is required'}
+
+    match_res = db.query_movie_match_name(match_q)
+
+    keys = ['id', 'name', 'starring', 'genre', 'rating', 'runtime']
+
+    def filter_field(movie:db.Movie):
+        temp = {k:getattr(movie,k) for k in keys}
+        temp['starring'] = [s.name for s in movie.starring]
+        temp['genre'] = [g.genre for g in movie.genre]
+        temp['runtime'] = get_default_runtime(movie.runtime).running_time
+        return temp
+
+    map_res = list(map(filter_field, match_res))
+    
+    data = {'statusCode':0, 'message':'query success', 'data': map_res}
 
     return data

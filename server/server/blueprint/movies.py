@@ -1,7 +1,7 @@
 from flask import Blueprint, g, request, current_app
 import json
 import logging
-from ..utils import datetime_to_json, get_time_string
+from ..utils import datetime_to_json, get_time_string, get_default_runtime, match_movie
 import datetime
 from ..pick_algo import pick_movies_by_num, pick_movies_by_time
 from .auth import login_required
@@ -16,15 +16,21 @@ bp = Blueprint('movies', __name__, url_prefix='/movie')
 @bp.route('/all', methods=['GET'])
 @login_required
 def get_all_movies():
-    db_res = db.query_all_movies_by_userid(g.user.id)
-    # print(db_res)
+    user_id = g.user.id
+    # user_id = 1
+    user_movies_map = db.query_user_movies_map(user_id)
     res = []
-    if db_res:
-        keys = db_res[0].field_list
-        for row in db_res:
+    keys = ['likability', 'have_seen', 'comment', 'create_time']
+    movie_keys = ['id', 'name', 'rating']
+    if user_movies_map:
+        for row in user_movies_map:
             temp = {k:getattr(row, k) for k in keys}
-            temp['starring'] = [s.name for s in temp['starring']]
-            temp['genre'] = [g.genre for g in temp['genre']]
+            movie = db.query_movie(row.movie_id)
+            for key in movie_keys:
+                temp[key] = getattr(movie, key)
+            temp['runtime'] = get_default_runtime(movie.runtime).running_time
+            temp['starring'] = [s.name for s in movie.starring]
+            temp['genre'] = [g.genre for g in movie.genre]
             res.append(temp)
         
     data = {'statusCode':0, 'message':'query success', 'data':res}
@@ -40,22 +46,30 @@ def insert_one_movie():
         logger.warning('req_data is none, may be content-type is not application/json!')
         return {'statusCode': -1, 'message':'req data is not json'}
 
-    temp_params = {key:r.get(key) for key, _ in r.items()}
-    if temp_params.get('create_time') is not None:
+    req_params = {key:r.get(key) for key, _ in r.items()}
+    if req_params.get('create_time') is not None:
         try:
-            temp_params['create_time'] = datetime.datetime.strptime(temp_params.get('create_time'), '%Y-%m-%d %H:%M:%S')
-            print(temp_params['create_time'])
+            req_params['create_time'] = datetime.datetime.strptime(req_params.get('create_time'), '%Y-%m-%d %H:%M:%S')
+            print(req_params['create_time'])
         except Exception as e:
             print(e)
             return {'statusCode': -1, 'message':'date format must match %Y-%m-%d %H:%M:%S'}
 
-    temp_params['creator_id'] = g.user.id
-    insert_id = db.insert_movie_by_userid(**temp_params)
+    user_id = g.user.id
+    # user_id = 1
+    # 先去库中匹配电影，若匹配不到则创建一个，movie_id为匹配到的或新创建的movie
+    temp_l = db.query_movie_match_name(req_params['name'])
+    matcher = match_movie(temp_l, {'rating':req_params['rating'], 'runtime':req_params['runtime']})
+    movie_id = -1
+    if matcher == None:
+        movie_id = db.insert_movie(req_params['name'], [db.RunningTime('default', int(req_params['runtime']))], req_params['rating'],
+                                    starring=req_params['starring'], genre=req_params['genre'])
+    else:
+        movie_id = matcher.id
 
-    row = db.query_movie(insert_id)
-    data = {k:getattr(row, k) for k in row.field_list}
-    data['starring'] = [s.name for s in data['starring']]
-    data['genre'] = [g.genre for g in data['genre']]
+    db.insert_user_movie_map(user_id, movie_id, req_params['likability'], req_params['have_seen'], req_params['comment'], req_params['create_time']) 
+
+    data = db.query_movie_with_userinfo(user_id, movie_id)
 
     res = {'statusCode': 0, 'message':'insert movie success', 'data': data}
 
@@ -73,8 +87,11 @@ def update_one_movie():
         logger.warning('update data does not contain id')
         print(r)
         return {'statusCode': -1, 'message':'update data must contain id'}
+    
+    r['movie_id'] = r['id']
+    del r['id']
 
-    db.update_movie(**r)
+    db.update_user_movie_map(g.user.id, **r)
 
     return {'statusCode': 0, 'message':'update movie success'}
 
@@ -87,7 +104,7 @@ def remove_one_movie():
         logger.warning('id is None!')
         return {'statusCode': -1, 'message':'delete method request id param'}
 
-    db.remove_movie(movie_id)
+    db.delete_user_movie_map(g.user.id, movie_id)
 
     return {'statusCode': 0, 'message':'remove movie success'}
 
@@ -116,21 +133,21 @@ def pick_movie():
 
     def filter_by_starring_and_genre(row):
         for s in starrings:
-            if row.starring is None:
+            if row['starring'] is None:
                 return False
             temp = db.query_starring(s)
             if temp is None:
                 return False
-            elif temp not in row.starring:
+            elif temp.name not in row['starring']:
                 return False
 
         for g in genres:
-            if row.genre is None:
+            if row['genre'] is None:
                 return False
             temp = db.query_genre(g)
             if temp is None:
                 return False
-            elif temp not in row.genre:
+            elif temp.genre not in row['genre']:
                 return False
         return True
 
@@ -143,17 +160,7 @@ def pick_movie():
     elif pick_type == 2:
         pick_res = pick_movies_by_num(int(data.get('value')), movies_input)
 
-    data = []
-    keys = []
-    if pick_res:
-        keys = pick_res[0].field_list
-    for row in pick_res:
-        temp = {k:getattr(row, k) for k in keys}
-        temp['starring'] = [s.name for s in temp['starring']]
-        temp['genre'] = [g.genre for g in temp['genre']]
-        data.append(temp)
-
-    res = {'statusCode': 0, 'message':'pick successful', 'data': data}
+    res = {'statusCode': 0, 'message':'pick successful', 'data': pick_res}
 
     return json.dumps(res, default=datetime_to_json, ensure_ascii=False)
     
@@ -161,15 +168,13 @@ def pick_movie():
 @login_required
 def export_movies_data():
     userid = g.user.id
-    movies = db.query_all_movies_by_userid(userid)
+    movies = db.query_all_movies_with_userinfo(userid)
     export_filename = ''
     if movies:
-        field_list = movies[0].field_list
+        field_list = ['id', 'name', 'rating', 'starring', 'genre', 'runtime', 'likability', 'have_seen', 'comment', 'create_time']
         movies_input = []
         for m in movies:
-            temp = {k:getattr(m, k) for k in field_list}
-            temp['starring'] = [s.name for s in temp['starring']]
-            temp['genre'] = [g.genre for g in temp['genre']]
+            temp = {k:m.get(k) for k in field_list}
             movies_input.append(temp)
         df = pandas.DataFrame(movies_input, columns=field_list)
         columns_to_drop = ['id']
@@ -181,9 +186,9 @@ def export_movies_data():
                 return '/'.join(m)
             return
         def convert_haveseen(have_seen):
-            if have_seen == 1:
+            if have_seen == True:
                 return '是'
-            elif have_seen == 0:
+            elif have_seen == False:
                 return '否'
             return ''
         df['starring'] = df['starring'].apply(convert_list)
@@ -239,5 +244,30 @@ def get_genres():
             res.append(temp)
         
     data = {'statusCode':0, 'message':'query success', 'data':res}
+
+    return data
+
+@bp.route('/movie', methods=['GET'])
+@login_required
+def get_match_movie():
+    match_q = request.args.get('match')
+    if match_q is None:
+        logger.warning('match is none, may be content-type is not application/json!')
+        return {'statusCode': -1, 'message':'parameter match is required'}
+
+    match_res = db.query_movie_match_name(match_q)
+
+    keys = ['id', 'name', 'starring', 'genre', 'rating', 'runtime']
+
+    def filter_field(movie:db.Movie):
+        temp = {k:getattr(movie,k) for k in keys}
+        temp['starring'] = [s.name for s in movie.starring]
+        temp['genre'] = [g.genre for g in movie.genre]
+        temp['runtime'] = get_default_runtime(movie.runtime).running_time
+        return temp
+
+    map_res = list(map(filter_field, match_res))
+    
+    data = {'statusCode':0, 'message':'query success', 'data': map_res}
 
     return data

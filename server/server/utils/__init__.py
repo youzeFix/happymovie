@@ -2,8 +2,21 @@ import datetime
 import logging
 import pandas
 import time
+from .. import db
 
 logger = logging.getLogger(__name__)
+
+def get_default_runtime(runtimes:list[db.RunningTime]) -> db.RunningTime:
+    return runtimes[0]
+
+def match_movie(q:list[db.Movie], row:dict) -> db.Movie:
+    for m in q:
+        if m.rating != row['rating']:
+            continue
+        for r in m.runtime:
+            if r.running_time == row['runtime']:
+                return m
+    return None
 
 def get_time_string():
     """
@@ -33,16 +46,6 @@ def parse_movies_excel(f) -> pandas.DataFrame:
 
     # 提取数据
     data = excel.loc[:, cols]
-    # 清洗数据
-    def transform_runtime(movie_runtime: str):
-        if not movie_runtime.isdigit():
-            movie_runtime = movie_runtime.split('分钟')[0]
-            if movie_runtime.isdigit():
-                return movie_runtime
-        else:
-            return movie_runtime
-
-        return 0
 
     data = data.fillna('')
     # print(data)
@@ -58,16 +61,15 @@ def parse_movies_excel(f) -> pandas.DataFrame:
 
     def transform_haveseen(have_seen: str):
         if have_seen == "是":
-            return 1
+            return True
         elif have_seen == '否':
-            return 0
+            return False
         return 0
 
     data['starring'] = data['starring'].apply(transform_starring)
     data['genre'] = data['genre'].apply(transform_genre)
     data['have_seen'] = data['have_seen'].apply(transform_haveseen)
 
-    # data['movie_runtime'] = data['movie_runtime'].apply(transform_runtime)
     return data
 
 

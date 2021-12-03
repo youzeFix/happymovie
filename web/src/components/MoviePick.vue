@@ -108,8 +108,8 @@
             <el-option
               v-for="item in remote_genre"
               :key="item.id"
-              :label="item.name"
-              :value="item.name">
+              :label="item.genre"
+              :value="item.genre">
             </el-option>
           </el-select>
           </el-col>

@@ -1,6 +1,5 @@
 from flask import Flask
 from logging.config import dictConfig
-from celery import Celery
 
 dictConfig({
     'version': 1,
@@ -45,13 +44,15 @@ def create_app(test_config=None):
     app.register_blueprint(auth.bp)
     app.register_blueprint(files.bp)
 
-    with app.app_context():
-        from .tasks import add_together
+    from .tasks import init_celery_app, add_together
+    init_celery_app(app)
+    
     @app.route('/hello')
     def hello():
+        print('receive hello request')
         result = add_together.delay(23, 42)
-        result.wait()
-        print('result is :' + result)
-        return 'hello, world' + result
+        res = result.get(timeout=10)
+        print('result is :' + res)
+        return 'hello, world' + res
     
     return app

@@ -3,5 +3,6 @@ ADD . /app
 WORKDIR /app
 RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 ENV HAPPYMOVIE_SETTINGS=config/production_config.py
+ENV CELERY_CONFIG=server.config.celery_prod_config
 # ENV FLASK_APP=server
 # RUN ["flask", "init-db"]

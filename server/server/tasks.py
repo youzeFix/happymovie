@@ -13,6 +13,6 @@ def init_celery_app(app):
 
     celery.Task = ContextTask
 
-@celery.task()
+@celery.task
 def add_together(a, b):
     return a + b

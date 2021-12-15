@@ -51,8 +51,8 @@ def create_app(test_config=None):
     def hello():
         print('receive hello request')
         result = add_together.delay(23, 42)
-        res = result.get(timeout=10)
-        print('result is :' + res)
-        return 'hello, world' + res
+        res = result.get(timeout=20)
+        print('result is :' + str(res))
+        return 'hello, world' + str(res)
     
     return app

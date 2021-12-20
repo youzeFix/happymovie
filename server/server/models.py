@@ -79,6 +79,10 @@ class Movie(db.Model):
     rating = db.Column(db.Float, nullable=False)
     # imdb
     imdb = db.Column(db.String(50))
+    # 海报链接
+    bg = db.Column(db.String(1000))
+    # 简介
+    summary = db.Column(db.String(5000))
 
     def __repr__(self):
         return '<Movie id=%d, name=%r, rating=%f>' % (self.id, self.name, self.rating)

@@ -162,8 +162,10 @@ def remove_movie(id):
     db.session.delete(movie)
     db.session.commit()
 
-def update_movie(id:int, starring:list[str]=None, genre:list[str]=None, runtime:int=None, rating:float=None, 
-                    likability:int=None, have_seen:int=None, comment:str=None):
+def update_movie(id:int, name:str=None, runtime:list[RunningTime]=None, rating:float=None, director:list[str]=None, 
+                scriptwriter:list[str]=None, starring:list[str]=None, genre:list[str]=None, region:str=None, 
+                language:list[str]=None, release_date:list[ReleaseDate]=None,  alternate_name:list[str]=None, 
+                imdb:str=None, bg:str=None, summary:str=None):
     params = locals()
     del params['id']
     sql_params = {k:v for k,v in params.items() if v is not None}
@@ -186,7 +188,8 @@ def update_movie(id:int, starring:list[str]=None, genre:list[str]=None, runtime:
     
 def insert_movie(name:str, runtime:list[RunningTime], rating:float, director:list[str]=None, scriptwriter:list[str]=None, 
                 starring:list[str]=None, genre:list[str]=None, region:str=None, language:list[str]=None, 
-                release_date:list[ReleaseDate]=None,  alternate_name:list[str]=None, imdb:str=None) -> int:
+                release_date:list[ReleaseDate]=None,  alternate_name:list[str]=None, imdb:str=None, bg:str=None, 
+                summary:str=None) -> int:
     loc = locals()
     loc['starring'] = turn_starring_list(starring)
     loc['genre'] = turn_genre_list(genre)

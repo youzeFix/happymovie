@@ -172,6 +172,10 @@ class Movie:
     imdb: str
     # 电影评分
     rating_num: float
+    # 海报链接
+    bg: str
+    # 简介
+    summary: str
 
 
 def parse_detail_page(page_text:str) -> Movie:
@@ -306,6 +310,16 @@ def search_douban_movie_url(movie_name:str) -> str:
             print('search url res:', res)
         return detail_url
 
+def get_single_movie_info(movie_name:str) -> Movie:
+    detail_url = search_douban_movie_url(movie_name)
+    if detail_url is None:
+        print(f'movie {movie_name} get no url')
+        return None
+    page_text = get_page_text(detail_url)
+    movie = parse_detail_page(page_text)
+    return movie
+
+
 def get_movies_info(movies_name:List[str]) -> pandas.DataFrame:
     '''
     根据电影名称抓取电影信息
@@ -318,12 +332,10 @@ def get_movies_info(movies_name:List[str]) -> pandas.DataFrame:
         time.sleep(random.randint(5,10))
         print(f'start {index+1}/{total}')
         try:
-            detail_url = search_douban_movie_url(m)
-            if detail_url is None:
-                print(f'movie {m} get no url')
+            movie = get_single_movie_info(m)
+            if movie is None:
+                logging.error(f'get movie {m} info failed')
                 continue
-            page_text = get_page_text(detail_url)
-            movie = parse_detail_page(page_text)
             print(f'get {m} info success')
             print(movie)
             movies.append(movie)

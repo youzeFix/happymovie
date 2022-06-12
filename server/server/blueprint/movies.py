@@ -7,6 +7,7 @@ from ..pick_algo import pick_movies_by_num, pick_movies_by_time
 from .auth import login_required
 import pandas
 import pathlib
+from ..crawler import get_page_text, parse_detail_page
 
 from .. import db
 
@@ -271,3 +272,38 @@ def get_match_movie():
     data = {'statusCode':0, 'message':'query success', 'data': map_res}
 
     return data
+
+@bp.route('/parse_url', methods=['POST'])
+@login_required
+def parse_movie_by_url():
+    r = request.get_json()
+    if r is None:
+        logger.warning('req_data is none, may be content-type is not application/json!')
+        return {'statusCode': -1, 'message':'req data is not json'}
+
+    url = r.get('url')
+    if url is None or url == '':
+        logger.error('url is null, parameter error')
+        return {'statusCode': -1, 'message':'url is null, parameter error'}
+
+    try:
+        page_text = get_page_text(url)
+        movie = parse_detail_page(page_text)
+
+        # # 如果不存在则存入数据库
+        # temp_l = db.query_movie_match_name(movie.movie_name)
+        # if len(temp_l) == 0:
+        #     db.insert_movie()
+
+        movie_data = {'movie_name': movie.movie_name, 'starring': movie.starring[:5], 'category': movie.category, 
+                        'running_time': movie.running_time[0].running_time, 'rating_num': movie.rating_num}
+        
+        data = {'statusCode':0, 'message':'parse success', 'data': movie_data}
+        return data
+    except Exception as e:
+        logger.error('parse url fail')
+        print(e)
+        data = {'statusCode':-1, 'message':'parse error'}
+        return data
+
+    

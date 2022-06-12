@@ -194,34 +194,44 @@ def parse_detail_page(page_text:str) -> Movie:
         s = etree.HTML(o)
         if s is not None:
             parse_list.append(''.join(s.xpath('//text()')))
-    director = parse_list[0].split(':')[1].split('/')
-    scriptwriter = parse_list[1].split(':')[1].split('/')
-    starring = parse_list[2].split(':')[1].split('/')
-    category = parse_list[3].split(':')[1].split('/')
-    region = parse_list[4].split(':')[1].split('/')
-    language = parse_list[5].split(':')[1].split('/')
-    temp_release_date = parse_list[6].split(':')[1].split('/')
-    release_date = []
-    for e in temp_release_date:
-        match_res = re.match('^(.+)\((.+)\)', e)
-        if match_res is not None:
-            release_date.append(ReleaseDate(match_res.group(2), match_res.group(1)))
 
-    temp_running_time = parse_list[7].split(':')[1].split('/')
-    running_time = []
-    for e in temp_running_time:
-        match_res = re.match('^(.+)\((.+)\)', e)
-        if match_res is not None:
-            run_time = match_res.group(1).split('分钟')[0]
-            running_time.append(RunningTime(match_res.group(2), run_time))
-        else:
-            run_time = e.split('分钟')[0]
-            running_time.append(RunningTime(None, run_time))
+    director=scriptwriter=starring=category=region=language=release_date=running_time=alternate_name=imdb=''
     
-    alternate_name = parse_list[8].split(':')[1].split('/')
-    imdb = ''
-    if len(parse_list) > 9:
-        imdb = parse_list[9].split(':')[1]
+    for parse_item in parse_list:
+        if '导演' in parse_item:
+            director = parse_item.split(':')[1].split('/')
+        elif '编剧' in parse_item:
+            scriptwriter = parse_item.split(':')[1].split('/')
+        elif '主演' in parse_item:
+            starring = parse_item.split(':')[1].split('/')
+        elif '类型' in parse_item:
+            category = parse_item.split(':')[1].split('/')
+        elif '地区' in parse_item:
+            region = parse_item.split(':')[1].split('/')
+        elif '语言' in parse_item:
+            language = parse_item.split(':')[1].split('/')
+        elif '上映日期' in parse_item:
+            temp_release_date = parse_item.split(':')[1].split('/')
+            release_date = []
+            for e in temp_release_date:
+                match_res = re.match('^(.+)\((.+)\)', e)
+                if match_res is not None:
+                    release_date.append(ReleaseDate(match_res.group(2), match_res.group(1)))
+        elif '片长' in parse_item:
+            temp_running_time = parse_item.split(':')[1].split('/')
+            running_time = []
+            for e in temp_running_time:
+                match_res = re.match('^(.+)\((.+)\)', e)
+                if match_res is not None:
+                    run_time = match_res.group(1).split('分钟')[0]
+                    running_time.append(RunningTime(match_res.group(2), run_time))
+                else:
+                    run_time = e.split('分钟')[0]
+                    running_time.append(RunningTime(None, run_time))
+        elif '又名' in parse_item:
+            alternate_name = parse_item.split(':')[1].split('/')
+        elif 'IMDb' in parse_item:
+            imdb = parse_item.split(':')[1]
 
     movie = Movie(movie_name, director, scriptwriter, starring, category, region, language, release_date, running_time, alternate_name, imdb, rating_num)
     return movie

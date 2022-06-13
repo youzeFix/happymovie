@@ -51,12 +51,13 @@ class TestCrawlerMethods(unittest.TestCase):
         print(detail_url)
 
     def test_parse_detail_page(self):
-        url = 'https://movie.douban.com/subject/25900945/'
+        url = 'https://movie.douban.com/subject/26871906/'
         page_text = get_page_text(url)
         # with open('detail_page_demo.html', 'w', encoding='utf-8') as f:
             # f.write(page_text)
         # page_text = open('detail_page_demo.html', 'r', encoding='utf-8').read()
         movie = parse_detail_page(page_text)
+        print(movie)
         df = pandas.DataFrame([movie])
         print(df)
 

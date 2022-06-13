@@ -5,11 +5,11 @@
         <el-button-group class="button-group-sub">
           <el-button type="primary" icon="el-icon-edit-outline" @click="editMovieData()" :disabled='edit_disabled'>编辑</el-button>
           
-          <el-dropdown>
+          <el-dropdown @command="handleCommand">
             <el-button type="primary" icon="el-icon-plus" @click="addMovieData()">新增</el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>新增</el-dropdown-item>
-              <el-dropdown-item>自动解析</el-dropdown-item>
+              <el-dropdown-item command="a">新增</el-dropdown-item>
+              <el-dropdown-item command="b">自动解析</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
           
@@ -322,6 +322,19 @@
         <el-button @click="bulkImportDialogVisible = false">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 自动解析对话框 -->
+    <el-dialog title="请输入解析链接" :visible.sync="dialogAutoParseVisible" v-loading="dialogAutoParseLoading" element-loading-text="拼命加载中">
+          <el-form>
+            <el-form-item>
+              <el-input v-model="auto_parse_url" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogAutoParseVisible = false">取 消</el-button>
+        <el-button type="primary" @click="autoParseUrlDialogOK()">确 定</el-button>
+      </div>
+    </el-dialog>
     
     </div>
 </template>
@@ -365,7 +378,10 @@
         remote_starring: [],
         remote_genre: [],
         remoteStarringLoading: false,
-        remoteGenreLoading: false
+        remoteGenreLoading: false,
+        auto_parse_url: '',
+        dialogAutoParseVisible: false,
+        dialogAutoParseLoading: false
       }
     },
     computed: {
@@ -387,6 +403,71 @@
     },
 
     methods: {
+      autoParseUrlDialogOK(){
+        console.log('url is:' + this.auto_parse_url)
+        let that = this;
+        this.dialogAutoParseLoading = true;
+        this.$axios.post('/movie/parse_url', {
+          'url': this.auto_parse_url
+        })
+        .then(function(response){
+          console.log(response.data);
+          if(response.data['statusCode'] == -1){
+            that.$message({
+              showClose: true,
+              message: '请登录后操作',
+              type: 'error'
+            });
+          }else if(response.data['statusCode'] == -2){
+            that.$message({
+              showClose: true,
+              message: '解析失败',
+              type: 'error'
+            });
+          }else{
+            that.$message({
+              showClose: true,
+              message: '解析成功',
+              type: 'success'
+            })
+            let data = response.data['data']
+            that.movie_form.name = data['movie_name']
+            that.movie_form.starring = data['starring']
+            that.movie_form.genre = data['category']
+            that.movie_form.runtime = data['running_time']
+            that.movie_form.rating = data['rating_num']
+            that.movie_form.have_seen = 0;
+            that.dialogAddFormVisible = true;
+          }
+          
+        })
+        .catch(function(error){
+          console.log(error);
+          that.$message({
+              showClose: true,
+              message: '解析失败',
+              type: 'error'
+            });
+        })
+        .then(function(){
+          that.dialogAutoParseLoading = false;
+          that.dialogAutoParseVisible=false;
+        })
+
+      },
+      handleCommand(command) {
+        switch (command) {
+          case 'a':
+            this.addMovieData();
+            break;
+          case 'b':
+            this.dialogAutoParseVisible = true;
+            break;
+        
+          default:
+            break;
+        }
+      },
       queryMatchMovie(queryString, cb){
         this.$axios.get('/movie/movie', {params: {match: queryString}})
         .then(function(response){

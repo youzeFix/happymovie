@@ -324,8 +324,8 @@
     </el-dialog>
 
     <!-- 自动解析对话框 -->
-    <el-dialog title="请输入解析链接" :visible.sync="dialogAutoParseVisible" v-loading="dialogAutoParseLoading" element-loading-text="拼命加载中">
-          <el-form>
+    <el-dialog title="请输入解析链接" :visible.sync="dialogAutoParseVisible">
+          <el-form v-loading="dialogAutoParseLoading" element-loading-text="拼命加载中">
             <el-form-item>
               <el-input v-model="auto_parse_url" autocomplete="off"></el-input>
             </el-form-item>
@@ -404,7 +404,7 @@
 
     methods: {
       autoParseUrlDialogOK(){
-        console.log('url is:' + this.auto_parse_url)
+        // console.log('url is:' + this.auto_parse_url)
         let that = this;
         this.dialogAutoParseLoading = true;
         this.$axios.post('/movie/parse_url', {
@@ -461,6 +461,7 @@
             this.addMovieData();
             break;
           case 'b':
+            this.auto_parse_url = '';
             this.dialogAutoParseVisible = true;
             break;
         

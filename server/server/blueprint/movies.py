@@ -10,6 +10,8 @@ import pathlib
 from server.utils.crawler import get_page_text, parse_detail_page
 
 from server.db import db
+from server.db.models import UserComment
+from server.db.models import db as db_sql
 
 logger = logging.getLogger(__name__)
 bp = Blueprint('movies', __name__, url_prefix='/movie')
@@ -307,3 +309,28 @@ def parse_movie_by_url():
         return data
 
     
+@bp.route('/comment', methods=['POST'])
+@login_required
+def add_comment():
+    r = request.get_json()
+    if r is None:
+        logger.warning('req_data is none, may be content-type is not application/json!')
+        return {'statusCode': -1, 'message':'req data is not json'}
+
+    user_id = g.user.id
+    comment = r.get('comment')
+    if comment is None or comment == '':
+        logger.error('comment is null, parameter error')
+        return {'statusCode': -1, 'message':'comment is null, parameter error'}
+    
+    movie_id = r.get('movie_id')
+    user_comment = UserComment(user_id=user_id, movie_id=movie_id, comment=comment)
+    db_sql.session.add(user_comment)
+
+    try:
+        db_sql.session.commit()
+        return {'statusCode':0, 'message':'add comment success'}
+    except Exception as e:
+        logger.error(f'error occured while insert UserComment.{e}')
+
+    return {'statusCode':-1, 'message':'add comment failed'}

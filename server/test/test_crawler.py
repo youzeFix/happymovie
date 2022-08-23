@@ -1,7 +1,7 @@
 import unittest
 
 import pandas
-from server.crawler import get_douban_top250, get_movies_brief_info, get_proxy, parse_favorite_movie, search_douban_movie_url, parse_detail_page, get_page_text, get_movies_info, parse_excel,\
+from server.utils.crawler import get_douban_top250, get_movies_brief_info, get_proxy, parse_favorite_movie, search_douban_movie_url, parse_detail_page, get_page_text, get_movies_info, parse_excel,\
                             get_movies_brief_info, parse_detail_page_runtime_and_rating
 import requests
 import warnings

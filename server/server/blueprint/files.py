@@ -1,8 +1,8 @@
 from flask import current_app, g, request, send_from_directory, Blueprint
 import logging
-from .auth import login_required
-from ..utils import parse_movies_excel, match_movie
-from .. import db
+from server.blueprint.auth import login_required
+from server.utils import parse_movies_excel, match_movie
+from server.db import db
 import pathlib
 
 logger = logging.getLogger(__name__)

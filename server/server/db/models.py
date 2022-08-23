@@ -100,3 +100,24 @@ class RunningTime(NamedTuple):
     version: str
     # 时长（分钟数）
     running_time: int
+
+class UserComment(db.Model):
+    """用户评论表
+    """
+    __tablename__ = 'user_comment'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, comment='用户id')
+    movie_id = db.Column(db.Integer, comment='电影id')
+    comment = db.Column(db.String(500), comment='评论')
+    create_time = db.Column(db.DateTime, default=datetime.datetime.now(), comment='创建时间')
+
+class OperationRecord(db.Model):
+    """操作记录表
+    """
+    __tablename__ = 'operation_record'
+    id = db.Column(db.Integer, primary_key=True)
+    operate_type = db.Column(db.Integer, comment='操作类型，1创建2更新3删除')
+    table_name = db.Column(db.String(100), comment='涉及表名')
+    value = db.Column(db.String(100), comment='新值')
+    history_value = db.Column(db.String(100), comment='历史值')
+    create_time = db.Column(db.DateTime, default=datetime.datetime.now(), comment='创建时间')

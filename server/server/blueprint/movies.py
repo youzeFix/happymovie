@@ -1,15 +1,15 @@
 from flask import Blueprint, g, request, current_app
 import json
 import logging
-from ..utils import datetime_to_json, get_time_string, get_default_runtime, match_movie
+from server.utils import datetime_to_json, get_time_string, get_default_runtime, match_movie
 import datetime
-from ..pick_algo import pick_movies_by_num, pick_movies_by_time
-from .auth import login_required
+from server.utils.pick_algo import pick_movies_by_num, pick_movies_by_time
+from server.blueprint.auth import login_required
 import pandas
 import pathlib
-from ..crawler import get_page_text, parse_detail_page
+from server.utils.crawler import get_page_text, parse_detail_page
 
-from .. import db
+from server.db import db
 
 logger = logging.getLogger(__name__)
 bp = Blueprint('movies', __name__, url_prefix='/movie')

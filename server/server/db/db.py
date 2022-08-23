@@ -1,5 +1,4 @@
-from .models import db, User, Movie, Starring, Genre, ReleaseDate, RunningTime, user_movie_table
-import pandas
+from server.db.models import db, User, Movie, Starring, Genre, ReleaseDate, RunningTime, user_movie_table
 import datetime
 import logging
 
@@ -139,7 +138,7 @@ def query_movie_with_userinfo(user_id:int, movie_id:int) -> dict:
     '''
     return dict: {id, name, starring, genre, rating, runtime, likability, have_seen, comment, create_time}
     '''
-    from .utils import get_default_runtime
+    from ..utils import get_default_runtime
     user_movie_map = query_user_movie_map(user_id, movie_id)
     movie_info = query_movie(movie_id)
     res = {}
@@ -185,7 +184,7 @@ def update_movie(id:int, starring:list[str]=None, genre:list[str]=None, runtime:
     db.session.commit()
     
 def insert_movie(name:str, runtime:list[RunningTime], rating:float, director:list[str]=None, scriptwriter:list[str]=None, 
-                starring:list[str]=None, genre:list[str]=None, region:str=None, language:list[str]=None, 
+                starring:list[str]=[], genre:list[str]=[], region:str=None, language:list[str]=None, 
                 release_date:list[ReleaseDate]=None,  alternate_name:list[str]=None, imdb:str=None) -> int:
     loc = locals()
     loc['starring'] = turn_starring_list(starring)

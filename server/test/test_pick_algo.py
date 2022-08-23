@@ -1,9 +1,10 @@
 import unittest
-from server.pick_algo import get_maximized_pleasure, Movie, pick_movies_by_time, pick_movies_by_num
-import server.db as db
+from server.utils.pick_algo import get_maximized_pleasure, Movie, pick_movies_by_time, pick_movies_by_num
+import server.db.db as db
 from server import create_app
 from pprint import pprint
 
+test_config = 'config/development_config.py'
 class TestPickAlgoMethods(unittest.TestCase):
 
     def test_get_maximized_pleasure(self):
@@ -22,7 +23,7 @@ class TestPickAlgoMethods(unittest.TestCase):
         pprint(res)
 
     def test_pick_movies_by_time(self):
-        app = create_app()
+        app = create_app(test_config)
         time_have = 500
         with app.app_context():
             movies = db.query_all_movies_havent_seen_by_userid(5)
@@ -31,7 +32,7 @@ class TestPickAlgoMethods(unittest.TestCase):
                 print(tuple(r))
 
     def test_pick_movies_by_nums(self):
-        app = create_app()
+        app = create_app(test_config)
         num = 3
         with app.app_context():
             movies = db.query_all_movies_havent_seen_by_userid(5)

@@ -2,14 +2,14 @@ import datetime
 import logging
 import pandas
 import time
-from .. import db
+from server.db.models import RunningTime, Movie
 
 logger = logging.getLogger(__name__)
 
-def get_default_runtime(runtimes:list[db.RunningTime]) -> db.RunningTime:
+def get_default_runtime(runtimes:list[RunningTime]) -> RunningTime:
     return runtimes[0]
 
-def match_movie(q:list[db.Movie], row:dict) -> db.Movie:
+def match_movie(q:list[Movie], row:dict) -> Movie:
     for m in q:
         if m.rating != row['rating']:
             continue

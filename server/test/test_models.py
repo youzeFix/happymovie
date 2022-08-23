@@ -1,18 +1,18 @@
-from threading import local
 import unittest
 from server import create_app
-from server.models import db, User, Movie, Starring, Genre
+from server.db.models import db, User, Movie, Starring, Genre
 
+test_config = 'config/development_config.py'
 class TestModelsMethods(unittest.TestCase):
 
     def test_create_all(self):
-        app = create_app()
+        app = create_app(test_config)
         with app.app_context():
             db.init_app(app)
             db.create_all()
 
     def test_drop_all(self):
-        app = create_app()
+        app = create_app(test_config)
         with app.app_context():
             db.init_app(app)
             db.drop_all()
@@ -53,7 +53,7 @@ class TestModelsMethods(unittest.TestCase):
             print(res)
 
     def test_insert_movie(self):
-        app = create_app()
+        app = create_app(test_config)
         with app.app_context():
             db.init_app(app)
             s1 = Starring.query.filter_by(name='actor1').first()
@@ -81,10 +81,10 @@ class TestModelsMethods(unittest.TestCase):
             print(ms)
 
     def test_query_movie(self):
-        app = create_app()
+        app = create_app(test_config)
         with app.app_context():
             db.init_app(app)
-            m2 = Movie.query.filter_by(name='movie2').first()
+            m2 = Movie.query.filter_by(name='龙门飞甲').first()
             print('res')
-            print(m2.field_list)
+            print(m2)
 

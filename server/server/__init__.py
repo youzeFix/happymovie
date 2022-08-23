@@ -33,7 +33,7 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_pyfile(test_config)
 
-    from .models import db
+    from .db.models import db
     db.init_app(app)
     with app.app_context():
         db.create_all()

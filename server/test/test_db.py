@@ -1,7 +1,7 @@
 import unittest
 from server import create_app
-import server.db as db
-from server.db import RunningTime
+from server.db import db
+from server.db.models import RunningTime
 import pprint
 
 test_config = 'config/development_config.py'
